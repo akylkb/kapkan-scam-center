@@ -13,6 +13,8 @@ export type SceneEventKind =
   | "withdraw.request"
   | "drop.burned"
   | "payout.sent"
+  | "link.opened"
+  | "account.banned"
   | "alarm"
   | "freeze"
   | "reset";
@@ -75,6 +77,18 @@ export const DIRECTOR_KEYS: readonly DirectorKey[] = [
     hint: "Деньги прошли цепочку, касса и счётчик вывода прыгают",
   },
   {
+    kind: "link.opened",
+    key: "9",
+    label: "Жертва открыла ссылку",
+    hint: "У чатера прилетает переход, вводятся данные карты, падает SMS-код",
+  },
+  {
+    kind: "account.banned",
+    key: "B",
+    label: "Личину забанили",
+    hint: "Аккаунт чатера краснеет, переписка обрывается на полуслове",
+  },
+  {
     kind: "freeze",
     key: "0",
     label: "Заморозить анимации",
@@ -99,7 +113,9 @@ export type FeedItem = {
     | "alarm"
     | "upgrade"
     | "payout"
-    | "burn";
+    | "burn"
+    | "link"
+    | "ban";
   text: string;
   amount?: number;
   /** Тик сцены, когда событие появилось */

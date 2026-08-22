@@ -1,6 +1,12 @@
 import { Rng } from "@/lib/prng";
 import { usd } from "@/lib/format";
-import { AGENT_ALIASES, DROP_ALIASES, pickCountry, pickName } from "@/lib/fixtures/pools";
+import {
+  AGENT_ALIASES,
+  DROP_ALIASES,
+  HANDLE_WORDS,
+  pickCountry,
+  pickName,
+} from "@/lib/fixtures/pools";
 import type { FeedItem, SceneEventKind } from "./events";
 
 /** Условное «время сцены» на старте: 16:42. Часы в шапке тикают от него. */
@@ -29,6 +35,9 @@ export type SceneState = {
   /** Экран дроповода: сгоревшая карта и ушедший залив */
   sigDropBurn: number;
   sigPayout: number;
+  /** Экран чатера: жертва открыла ссылку и забаненная личина */
+  sigLink: number;
+  sigBan: number;
   /** Последний зачисленный депозит — для вспышек и всплывающих плашек */
   lastAmount: number;
   lastName: string;
@@ -57,6 +66,8 @@ function initialState(seat: number): SceneState {
     sigWithdraw: 0,
     sigDropBurn: 0,
     sigPayout: 0,
+    sigLink: 0,
+    sigBan: 0,
     lastAmount: 0,
     lastName: "",
     lastFlag: "",
@@ -247,6 +258,39 @@ export class SceneStore {
         break;
       }
 
+      case "link.opened": {
+        // Жертва перешла по ссылке и ввела карту — деньги списываются сразу,
+        // поэтому событие пополняет ту же общую выручку, что и депозит
+        const amount = rng.money(180, 5_200);
+        this.set({
+          sigLink: this.state.sigLink + 1,
+          lastAmount: amount,
+          lastName: name,
+          lastFlag: country.flag,
+          revenue: this.state.revenue + amount,
+        });
+        this.pushFeed({
+          kind: "link",
+          amount,
+          text: `${country.flag} ${name} · ссылка открыта · карта введена · списано ${usd(amount)}`,
+        });
+        break;
+      }
+
+      case "account.banned": {
+        const handle = `@${rng.pick(HANDLE_WORDS)}_${rng.int(70, 99)}`;
+        this.set({
+          sigBan: this.state.sigBan + 1,
+          lastName: handle,
+          lastFlag: country.flag,
+        });
+        this.pushFeed({
+          kind: "ban",
+          text: `АККАУНТ ${handle} · ЗАБЛОКИРОВАН · переписка оборвана`,
+        });
+        break;
+      }
+
       case "alarm":
         this.set({ alarm: !this.state.alarm });
         if (!this.state.alarm) break;
@@ -285,11 +329,13 @@ export class SceneStore {
     const agent = rng.pick(AGENT_ALIASES);
 
     const kind = rng.weighted<FeedItem["kind"]>([
-      ["deposit", 34],
-      ["call", 24],
-      ["join", 18],
-      ["upgrade", 12],
-      ["lost", 8],
+      ["deposit", 30],
+      ["call", 21],
+      ["join", 16],
+      ["upgrade", 10],
+      ["link", 9],
+      ["lost", 7],
+      ["ban", 3],
       ["withdraw", 4],
     ]);
 
@@ -333,6 +379,22 @@ export class SceneStore {
           kind,
           amount: rng.money(1_000, 18_000),
           text: `${country.flag} ${masked} · запрос вывода · отклонён`,
+        });
+        break;
+      case "link": {
+        const amount = rng.money(120, 3_800);
+        this.set({ revenue: this.state.revenue + amount });
+        this.pushFeed({
+          kind,
+          amount,
+          text: `${country.flag} ${masked} · переход по ссылке · списано ${usd(amount)}`,
+        });
+        break;
+      }
+      case "ban":
+        this.pushFeed({
+          kind,
+          text: `@${rng.pick(HANDLE_WORDS)}_${rng.int(70, 99)} · аккаунт заблокирован · ${rng.int(2, 9)} диалогов потеряно`,
         });
         break;
     }

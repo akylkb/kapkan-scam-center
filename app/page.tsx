@@ -4,6 +4,7 @@ import {
   Keyboard,
   LayoutDashboard,
   LineChart,
+  MessageSquare,
   Users,
   Wallet,
 } from "lucide-react";
@@ -32,6 +33,15 @@ const SCREENS = [
     desc: "Реестр подставных карт, очередь заливов, цепочки отмыва до наличных, касса и точки снятия.",
     seats: true,
     accent: "border-violet-700/50 hover:border-violet-500",
+  },
+  {
+    href: "/chat",
+    icon: MessageSquare,
+    title: "CRM чатера",
+    sub: "Мессенджеры · 10 машин",
+    desc: "Переписка с жертвой, личины-аккаунты, звонок с подменой голоса, видео с подменой лица, фишинговые ссылки и перехват СМС-кодов.",
+    seats: true,
+    accent: "border-cyan-700/50 hover:border-cyan-500",
   },
   {
     href: "/wall",

@@ -14,6 +14,8 @@ const KIND_STYLE: Record<FeedItem["kind"], string> = {
   alarm: "text-rose-300 font-bold",
   payout: "text-emerald-300",
   burn: "text-rose-400 font-bold",
+  link: "text-cyan-300",
+  ban: "text-rose-300",
 };
 
 const KIND_MARK: Record<FeedItem["kind"], string> = {
@@ -26,6 +28,8 @@ const KIND_MARK: Record<FeedItem["kind"], string> = {
   alarm: "⚠",
   payout: "⇄",
   burn: "✕",
+  link: "⇱",
+  ban: "⊘",
 };
 
 /**
@@ -76,4 +80,6 @@ const PLACEHOLDER: FeedItem[] = [
   { id: -8, kind: "lost", at: 0, text: "🇫🇷 Monique F. · отказ · передан в RECOVERY" },
   { id: -9, kind: "payout", at: 0, text: "ЗАЛИВ $4 200 · «Тюльпан» → обменник → касса · ЗАКРЫТ" },
   { id: -10, kind: "burn", at: 0, text: "ДРОП «Сивый» · КАРТА ЗАБЛОКИРОВАНА · залив $2 800 завис" },
+  { id: -11, kind: "link", at: 0, text: "🇰🇿 Айгуль С. · переход по ссылке · списано $340" },
+  { id: -12, kind: "ban", at: 0, text: "@marina_84 · аккаунт заблокирован · 6 диалогов потеряно" },
 ];

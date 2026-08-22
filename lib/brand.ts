@@ -66,6 +66,59 @@ export const BRAND = {
   vault: {
     name: "COLDNEST",
   },
+
+  /** Панель отдела мессенджеров — то, что видит чатер */
+  chat: {
+    name: "LUREBOX",
+    suffix: "MP",
+    full: "LUREBOX·MP",
+    version: "3.8.1-mp",
+    tagline: "Messenger Panel",
+  },
+
+  /** Конструктор фишинговых страниц-клонов */
+  phish: {
+    name: "CLONEKIT",
+  },
+
+  /** Сервис, куда падают перехваченные SMS-коды */
+  otp: {
+    name: "SMSHUB",
+  },
+
+  /** Подмена голоса в звонке */
+  voice: {
+    name: "VOXSHIFT",
+  },
+
+  /** Подмена лица в видеозвонке */
+  deepfake: {
+    name: "FACEFORGE",
+  },
+
+  /** Массовая рассылка первых сообщений */
+  blast: {
+    name: "SPRAYER",
+  },
+
+  /**
+   * Дальше — вымышленные «жертвы клонирования»: под них косят фишинговые
+   * страницы. Существующие маркетплейсы, службы доставки и банки в кадр
+   * не попадают ни под каким видом.
+   */
+  market: {
+    name: "БАРАХОЛКА",
+    domain: "baraholka.market",
+  },
+  delivery: {
+    name: "СКОРОХОД",
+    domain: "skorohod-post.net",
+  },
+  bankfake: {
+    name: "ПЕРВЫЙ КРЕДИТНЫЙ",
+    short: "ПКБ",
+    domain: "pkb-online.bank",
+  },
 } as const;
 
 /** Отделы — «деск» определяет, кому какие лиды падают */
@@ -92,3 +145,18 @@ export const DROP_POOLS = [
 ] as const;
 
 export type DropPoolId = (typeof DROP_POOLS)[number]["id"];
+
+/**
+ * Пулы чатеров — по какой схеме работает рабочее место.
+ * Пул задаёт перекос по схемам: у «товарки» почти всё — продажа
+ * несуществующего товара, у «романтики» — долгие диалоги.
+ */
+export const CHAT_POOLS = [
+  { id: "goods", label: "ПУЛ · ТОВАРКА", short: "ТОВАР" },
+  { id: "delivery", label: "ПУЛ · ДОСТАВКА", short: "ДОСТАВ" },
+  { id: "bank", label: "ПУЛ · БАНК-СБ", short: "БАНК-СБ" },
+  { id: "romance", label: "ПУЛ · РОМАНТИКА", short: "РОМАН" },
+  { id: "crypto", label: "ПУЛ · КРИПТА", short: "КРИПТА" },
+] as const;
+
+export type ChatPoolId = (typeof CHAT_POOLS)[number]["id"];
