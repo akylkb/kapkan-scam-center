@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Rng } from "@/lib/prng";
 import { BRAND } from "@/lib/brand";
 import {
@@ -79,15 +79,24 @@ export function ChatScreen({ seat }: { seat: number }) {
   const sigLost = useSceneValue(selectSigLost);
   const sigCall = useSceneValue(selectSigCall);
 
-  // Правки режиссёра накладываются поверх фикстур: сами фикстуры не мутируем,
-  // иначе Ctrl+Alt+R не вернёт исходное состояние
+  // Правки режиссёра и реплики оператора накладываются поверх фикстур: сами
+  // фикстуры не мутируем, иначе Ctrl+Alt+R не вернёт исходное состояние.
+  // Слияние идёт здесь, а не в ленте чата, чтобы предпросмотр в списке слева
+  // тоже показывал свежую реплику.
   const threads = useMemo(
     () =>
       desk.threads.map((t) => {
         const o = overrides[t.id];
-        return o ? { ...t, status: o.status ?? t.status, stage: o.stage ?? t.stage } : t;
+        const inj = injected[t.id];
+        if (!o && !inj) return t;
+        return {
+          ...t,
+          status: o?.status ?? t.status,
+          stage: o?.stage ?? t.stage,
+          messages: inj ? [...inj, ...t.messages] : t.messages,
+        };
       }),
-    [desk.threads, overrides],
+    [desk.threads, overrides, injected],
   );
 
   const visible = useMemo(() => filterThreads(threads, queue), [threads, queue]);
@@ -97,9 +106,21 @@ export function ChatScreen({ seat }: { seat: number }) {
   const personaId = personaPick[selected.id] ?? selected.personaId;
   const persona = desk.personas.find((p) => p.id === personaId) ?? desk.personas[0];
 
-  const messages = useMemo(
-    () => [...(injected[selected.id] ?? []), ...selected.messages],
-    [injected, selected],
+  // Реплика, которую актёр напечатал в кадре. Счётчик — вместо случайного id:
+  // Math.random() в этом проекте запрещён, а ключи должны быть уникальны
+  const sentRef = useRef(0);
+  const handleSend = useCallback(
+    (text: string) => {
+      const id = `IN-sent-${(sentRef.current += 1)}`;
+      setInjected((prev) => ({
+        ...prev,
+        [selected.id]: [
+          { id, from: "operator", text, agoMin: 0 },
+          ...(prev[selected.id] ?? []),
+        ],
+      }));
+    },
+    [selected.id],
   );
 
   // Ctrl+Alt+9 — жертва открыла ссылку и ввела карту: переход в счётчике,
@@ -260,11 +281,11 @@ export function ChatScreen({ seat }: { seat: number }) {
         <ChatThread
           key={selected.id}
           thread={selected}
-          messages={messages}
           persona={persona}
           personaBanned={persona.id === bannedPersonaId}
           blown={overrides[selected.id]?.blown ?? selected.status === "suspicious"}
           onTool={setTool}
+          onSend={handleSend}
         />
 
         {/* Правая колонка: карточка жертвы + док инструментов */}

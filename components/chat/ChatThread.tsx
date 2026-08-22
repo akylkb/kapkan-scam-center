@@ -5,7 +5,6 @@ import {
   CHANNEL_META,
   STAGES,
   THREAD_STATUS_META,
-  type Message,
   type Thread,
 } from "@/lib/fixtures/threads";
 import { SCHEME_META } from "@/lib/fixtures/threads";
@@ -18,19 +17,20 @@ import type { ToolId } from "./ToolDock";
 
 export function ChatThread({
   thread,
-  messages,
   persona,
   personaBanned,
   blown,
   onTool,
+  onSend,
 }: {
+  /** Реплики лежат в thread.messages новыми вперёд: лента рисуется
+      flex-col-reverse и сама упирается в нижний край */
   thread: Thread;
-  /** Новые сверху: лента рисуется flex-col-reverse и упирается в низ */
-  messages: Message[];
   persona: Persona;
   personaBanned: boolean;
   blown: boolean;
   onTool: (tool: ToolId) => void;
+  onSend: (text: string) => void;
 }) {
   const ch = CHANNEL_META[thread.channel];
   const status = THREAD_STATUS_META[thread.status];
@@ -114,7 +114,7 @@ export function ChatThread({
         на свежих репликах. Скроллить наверх её можно, но JS для этого не нужен.
       */}
       <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto py-2">
-        {messages.map((m) => (
+        {thread.messages.map((m) => (
           <MessageBubble key={m.id} msg={m} />
         ))}
 
@@ -133,6 +133,7 @@ export function ChatThread({
         thread={thread}
         persona={persona}
         bannedStatus={personaBanned ? "banned" : persona.status}
+        onSend={onSend}
       />
     </div>
   );

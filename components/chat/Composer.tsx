@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   FileCheck2,
   Image as ImageIcon,
@@ -33,13 +34,27 @@ export function Composer({
   thread,
   persona,
   bannedStatus,
+  onSend,
 }: {
   thread: Thread;
   persona: Persona;
   /** Личина в бане — писать нечем, поле блокируется */
   bannedStatus: PersonaStatus;
+  /** Отправить реплику в ленту чата */
+  onSend: (text: string) => void;
 }) {
   const banned = bannedStatus === "banned";
+
+  // Черновик живёт в компоненте: при переключении диалога Composer
+  // перемонтируется вместе с ChatThread, и поле само очищается
+  const [draft, setDraft] = useState("");
+
+  function send() {
+    const text = draft.trim();
+    if (!text || banned) return;
+    onSend(text);
+    setDraft("");
+  }
 
   return (
     <div
@@ -82,16 +97,35 @@ export function Composer({
             Аккаунт {persona.handle} заблокирован — переписка недоступна
           </span>
         ) : (
-          <span className="flex flex-1 items-center text-[12.5px] text-zinc-400">
-            Не переживайте, всё оформлено официально
-            <span className="ml-[1px] inline-block h-[14px] w-[1.5px] animate-blink bg-cyan-400" />
-          </span>
+          /*
+            Настоящее поле: актёр печатает реплику прямо в кадре и отправляет
+            её в ленту. select-text — потому что выделение отключено глобально,
+            а в поле ввода оно нужно.
+          */
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            autoFocus
+            spellCheck={false}
+            autoComplete="off"
+            placeholder="Не переживайте, всё оформлено официально"
+            className="flex-1 select-text bg-transparent text-[12.5px] text-zinc-200 placeholder:text-zinc-600"
+          />
         )}
         <button
-          disabled={banned}
+          onClick={send}
+          disabled={banned || draft.trim().length === 0}
           className={cx(
             "flex h-[24px] w-[26px] shrink-0 items-center justify-center rounded-[3px] transition-colors",
-            banned ? "bg-zinc-800 text-zinc-600" : "bg-cyan-500 text-zinc-950 hover:bg-cyan-400",
+            banned || draft.trim().length === 0
+              ? "bg-zinc-800 text-zinc-600"
+              : "bg-cyan-500 text-zinc-950 hover:bg-cyan-400",
           )}
         >
           <SendHorizontal className="h-3.5 w-3.5" strokeWidth={2.2} />
@@ -103,7 +137,8 @@ export function Composer({
           пишем от {persona.handle} · {persona.legend}
         </span>
         <span>
-          шаблон «{BRAND.chat.name}-{thread.scheme.toUpperCase()}» · черновик сохранён
+          шаблон «{BRAND.chat.name}-{thread.scheme.toUpperCase()}» ·{" "}
+          {banned ? "отправка заблокирована" : "Enter — отправить"}
         </span>
       </p>
     </div>
