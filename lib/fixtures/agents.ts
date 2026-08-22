@@ -1,6 +1,6 @@
 import { Rng } from "@/lib/prng";
 import { DESKS } from "@/lib/brand";
-import { AGENT_ALIASES, AGENT_REAL, COUNTRIES } from "./pools";
+import { AGENT_ALIASES, AGENT_REAL, pickCountry, pickName } from "./pools";
 
 const DESK_LABELS = DESKS.map((d) => d.label);
 
@@ -44,7 +44,7 @@ export function makeAgents(rng: Rng, count: number): Agent[] {
       ["break", 12],
       ["offline", 6],
     ]);
-    const country = rng.pick(COUNTRIES);
+    const country = pickCountry(rng);
     return {
       seat: i + 1,
       alias: aliases[i],
@@ -57,7 +57,7 @@ export function makeAgents(rng: Rng, count: number): Agent[] {
       calls: rng.int(18, 132),
       talkMin: rng.int(40, 380),
       conversion: rng.range(0.04, 0.31),
-      onCallWith: `${rng.pick(country.first)} ${rng.pick(country.last)}`,
+      onCallWith: pickName(rng, country),
       onCallFlag: country.flag,
     };
   });

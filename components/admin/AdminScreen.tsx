@@ -15,7 +15,7 @@ import {
 import { BRAND } from "@/lib/brand";
 import { Rng } from "@/lib/prng";
 import { AGENT_STATE_META, makeAgents, type Agent } from "@/lib/fixtures/agents";
-import { COUNTRIES, INSTRUMENTS } from "@/lib/fixtures/pools";
+import { INSTRUMENTS, pickCountry, pickName } from "@/lib/fixtures/pools";
 import { mmss, usd } from "@/lib/format";
 import { SceneClock } from "@/components/shared/SceneClock";
 import { Ticker } from "@/components/shared/Ticker";
@@ -40,10 +40,10 @@ export function AdminScreen() {
   const withdrawals = useMemo(() => {
     const rng = new Rng("admin-withdrawals");
     return Array.from({ length: 11 }, (_, i) => {
-      const c = rng.pick(COUNTRIES);
+      const c = pickCountry(rng);
       return {
         id: `WD-${rng.int(10000, 99999)}`,
-        name: `${rng.pick(c.first)} ${rng.pick(c.last)}`,
+        name: pickName(rng, c),
         flag: c.flag,
         amount: rng.money(1_800, 74_000),
         waiting: rng.int(2, 41),
@@ -62,10 +62,10 @@ export function AdminScreen() {
   const sessions = useMemo(() => {
     const rng = new Rng("admin-sessions");
     return Array.from({ length: 9 }, (_, i) => {
-      const c = rng.pick(COUNTRIES);
+      const c = pickCountry(rng);
       return {
         id: `RV-${rng.int(1000, 9999)}`,
-        name: `${rng.pick(c.first)} ${rng.pick(c.last)}`,
+        name: pickName(rng, c),
         flag: c.flag,
         ip: `${rng.int(31, 213)}.${rng.int(2, 254)}.${rng.int(2, 254)}.${rng.int(2, 254)}`,
         seat: rng.int(1, 20),

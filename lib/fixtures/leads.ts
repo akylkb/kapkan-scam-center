@@ -2,8 +2,9 @@ import { Rng } from "@/lib/prng";
 import { maskPhone } from "@/lib/format";
 import {
   AGENT_ALIASES,
-  COUNTRIES,
   LEAD_NOTES,
+  pickCountry,
+  pickName,
   type Country,
 } from "./pools";
 
@@ -205,8 +206,8 @@ function buildIp(rng: Rng): string {
 
 /** Один лид. `index` входит в id, чтобы карточки не совпадали между машинами. */
 export function makeLead(rng: Rng, index: number): Lead {
-  const country = rng.pick(COUNTRIES);
-  const name = `${rng.pick(country.first)} ${rng.pick(country.last)}`;
+  const country = pickCountry(rng);
+  const name = pickName(rng, country);
 
   const status = rng.weighted<LeadStatus>([
     ["hot", 22],

@@ -27,8 +27,12 @@ export function WallScreen() {
   const hours = useMemo(() => hourlyRevenue(new Rng("wall-hours"), 13), []);
   const countries = useMemo(() => {
     const rng = new Rng("wall-countries");
-    return rng
-      .sample(COUNTRIES, 7)
+    // Состав строк задан явно: половина СНГ, половина Европа. Равномерная
+    // выборка из общего списка регулярно даёт семь европейских флагов подряд,
+    // и на общем плане контора перестаёт читаться как местная.
+    const cis = COUNTRIES.filter((c) => (c.weight ?? 1) > 1);
+    const rest = COUNTRIES.filter((c) => (c.weight ?? 1) === 1);
+    return [...rng.sample(cis, 4), ...rng.sample(rest, 3)]
       .map((c) => ({ c, value: rng.money(9_000, 76_000) }))
       .sort((a, b) => b.value - a.value);
   }, []);

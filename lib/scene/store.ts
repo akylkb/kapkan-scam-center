@@ -1,6 +1,6 @@
 import { Rng } from "@/lib/prng";
 import { usd } from "@/lib/format";
-import { AGENT_ALIASES, COUNTRIES } from "@/lib/fixtures/pools";
+import { AGENT_ALIASES, pickCountry, pickName } from "@/lib/fixtures/pools";
 import type { FeedItem, SceneEventKind } from "./events";
 
 /** Условное «время сцены» на старте: 16:42. Часы в шапке тикают от него. */
@@ -127,8 +127,8 @@ export class SceneStore {
 
   private apply(kind: SceneEventKind) {
     const rng = new Rng(`evt-${this.seat}-${kind}-${this.state.tick}`);
-    const country = rng.pick(COUNTRIES);
-    const name = `${rng.pick(country.first)} ${rng.pick(country.last)}`;
+    const country = pickCountry(rng);
+    const name = pickName(rng, country);
 
     switch (kind) {
       case "call.incoming":
@@ -240,8 +240,8 @@ export class SceneStore {
     const rng = new Rng(`auto-${this.seat}-${second}`);
     if (!rng.chance(0.28)) return;
 
-    const country = rng.pick(COUNTRIES);
-    const name = `${rng.pick(country.first)} ${rng.pick(country.last)}`;
+    const country = pickCountry(rng);
+    const name = pickName(rng, country);
     const masked = `${name.split(" ")[0]} ${name.split(" ")[1][0]}.`;
     const agent = rng.pick(AGENT_ALIASES);
 
