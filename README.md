@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Экранный реквизит · сериал «Капкан»
 
-## Getting Started
+Интерфейсы подпольного колл-центра для съёмок. Работающего бэкенда нет и не
+предполагается: задача — картинка, которая держит крупный план и читается
+на общем.
 
-First, run the development server:
+Все бренды, имена, телефоны и номера счетов вымышленные. Приложение не ходит
+в сеть и не обрабатывает никаких реальных данных.
+
+---
+
+## Запуск на площадке
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install          # один раз, нужен интернет
+npm run build        # один раз, нужен интернет
+npm start            # на площадке; интернет НЕ нужен
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Сервер поднимается на `http://localhost:3000`. Если снимаете с нескольких
+машин, поднимите его на одной и раздайте остальным по локальной сети:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm start -- -H 0.0.0.0 -p 3000
+# на остальных машинах открывайте http://<ip-ведущей-машины>:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Стартовая страница `/` — служебный пульт запуска: выбираете экран, номер
+места, нажимаете. В кадр она не попадает.
 
-## Learn More
+### Полноэкранный режим
 
-To learn more about Next.js, take a look at the following resources:
+`F11` в любом браузере. Надёжнее — сразу запускать в киоске:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# macOS
+open -na "Google Chrome" --args --kiosk --disable-infobars "http://localhost:3000/crm?seat=3"
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Windows
+chrome.exe --kiosk --disable-infobars "http://localhost:3000/crm?seat=3"
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Экраны
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Адрес | Что это | Куда ставить |
+|---|---|---|
+| `/crm?seat=N` | Рабочее место оператора | Все 10 машин в зале, **у каждой свой N** |
+| `/wall` | Дашборд на стену | Плазма/проектор, общий план |
+| `/client` | Кабинет «брокера» глазами жертвы | Ноутбук жертвы, сцены с демонстрацией экрана |
+| `/admin` | Панель супервайзера | Экран главного |
+
+### Про `seat`
+
+Номер места — не украшение. Он определяет имя оператора, его лиды, суммы и
+таймер звонка. Если открыть на всех десяти машинах один и тот же адрес, в
+общем плане будут десять одинаковых экранов, и сцена сразу читается как
+декорация. Раздайте `?seat=1` … `?seat=10`.
+
+При этом данные детерминированы: `seat=3` всегда показывает одно и то же.
+Дубль 1 и дубль 7 совпадут, монтаж склеится.
+
+---
+
+## Режиссёрский пульт
+
+Горячие клавиши работают на любом экране. Визуального отклика у самого
+нажатия нет — в кадре оно незаметно.
+
+| Клавиши | Что происходит |
+|---|---|
+| `Ctrl+Alt+1` | Входящий звонок: софтфон поднимает трубку, таймер с нуля |
+| `Ctrl+Alt+2` | **Депозит зачислен** — зелёная вспышка, счётчики скачут, событие в ленте |
+| `Ctrl+Alt+3` | Клиент сорвался: строка краснеет, звонок обрывается |
+| `Ctrl+Alt+4` | **VIP-кит** — крупный депозит, лидерборд на стене перестраивается |
+| `Ctrl+Alt+5` | Запрос на вывод: у жертвы всплывает требование «налога 10%» |
+| `Ctrl+Alt+6` | **ТРЕВОГА / рейд** — всё краснеет, домен заблокирован (повторно — выключить) |
+| `Ctrl+Alt+0` | Стоп-кадр: заморозить все анимации (для установки света) |
+| `Ctrl+Alt+R` | **СБРОС ДУБЛЯ** — вернуть исходное состояние |
+
+**`Ctrl+Alt+R` перед каждым дублем.** Без сброса таймеры и суммы уедут, и
+кадры не состыкуются на монтаже.
+
+Вкладки на одной машине синхронизируются автоматически. Между разными
+машинами — нет: события нажимаются на той машине, которая в кадре.
+
+---
+
+## Чек-лист перед сменой
+
+1. `npm run build` дома, с интернетом. На площадке — только `npm start`.
+2. Проверить, что все машины открыты с **разными** `?seat=`.
+3. Полноэкранный режим на каждой (`F11`), закладки и панель Chrome убраны.
+4. Прогнать хоткеи на одной машине, убедиться, что реагирует.
+5. `Ctrl+Alt+R` — и можно снимать.
+
+---
+
+## Структура кода
+
+```
+app/                  четыре экрана + служебный лаунчер
+components/
+  crm/                рабочее место оператора
+  wall/               дашборд на стену (карта мира считается программно)
+  client/             кабинет жертвы
+  admin/              панель супервайзера
+  shared/             тикер, часы, вспышки событий, базовые элементы
+lib/
+  brand.ts            ВСЕ названия в кадре — менять только здесь
+  prng.ts             детерминированный генератор (см. «Про seat»)
+  format.ts           деньги, время, маскировка телефонов
+  fixtures/           генераторы лидов, операторов, свечей, транзакций
+  scene/              часы сцены, шина событий, горячие клавиши
+```
+
+### Если нужно переименовать бренды
+
+Всё лежит в [lib/brand.ts](lib/brand.ts): CRM `VORTEX·TS`, «брокер»
+`AURUM CAPITAL`, контора `MERIDIAN GROUP`, платёжка `PayNordic`, VoIP
+`TALKGRID`, софт удалённого доступа `REMOTEVIEW`. Правится за минуту.
+
+### Достоверность
+
+Устройство интерфейсов опирается на материалы расследований OCCRP
+(«Fraud Factory», «Scam Empire») и Qurium: разделение на конверсию и
+ретеншн, работа операторов под псевдонимами, карточка клиента с полями
+о капитале и опыте инвестиций, встроенная в CRM дорисовка депозитов,
+блокировка выводов под предлогом налога, удалённый доступ к экрану жертвы,
+лидерборды и запись всех разговоров.

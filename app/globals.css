@@ -1,26 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ---------------------------------------------------------------------------
+   Экранный реквизит для съёмки. Правила отличаются от обычного веб-проекта:
+   — всё тёмное (светлый монитор бликует и пересвечивает лицо актёра);
+   — ничего лишнего в кадре: ни выделения текста, ни фокус-колец, ни скроллбаров;
+   — вёрстка рассчитана на 1920×1080, свободного ресайза не предполагается.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --font-sans: var(--font-ui), system-ui, sans-serif;
+  --font-mono: var(--font-code), ui-monospace, monospace;
+
+  --animate-marquee: marquee 48s linear infinite;
+  --animate-marquee-fast: marquee 26s linear infinite;
+  --animate-wave: wave 1.1s ease-in-out infinite;
+  --animate-flash-in: flash-in 0.9s ease-out;
+  --animate-blink: blink 1.2s step-end infinite;
+  --animate-alarm: alarm 1.05s ease-in-out infinite;
+  --animate-throb: throb 0.9s ease-in-out infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
 }
 
+@keyframes flash-in {
+  0% { opacity: 0; transform: scale(0.94); }
+  12% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes alarm {
+  0%, 100% { background-color: rgb(244 63 94 / 0.10); }
+  50% { background-color: rgb(244 63 94 / 0.28); }
+}
+
+/* Мигание текста тревоги: не до нуля — надпись должна читаться и на стоп-кадре */
+@keyframes throb {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  background: #09090b; /* zinc-950 — минимум блика на съёмочном мониторе */
+  color: #e4e4e7;
+  font-family: var(--font-sans);
+  overflow: hidden; /* страница-экран, а не документ: скролл только внутри панелей */
+}
+
+/* Ничего из этого не должно попасть в кадр */
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus,
+*:focus-visible {
+  outline: none;
+}
+
+/* Тонкие тёмные скроллбары: системные светлые полосы сразу выдают «это браузер» */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Табличные цифры: без них счётчики «дёргаются» по ширине при каждом тике */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Режим «стоп-кадр» — Ctrl+Alt+0 на площадке */
+.scene-frozen *,
+.scene-frozen *::before,
+.scene-frozen *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+@utility panel {
+  background-color: #0d0d10;
+  border: 1px solid #1f1f25;
+}
+
+@utility grid-bg {
+  background-image:
+    linear-gradient(rgb(63 63 70 / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(63 63 70 / 0.09) 1px, transparent 1px);
+  background-size: 34px 34px;
 }
