@@ -87,6 +87,27 @@ export function maskPhone(countryCode: string, local: string): string {
   return `+${countryCode} ${digits[0]}${hidden.slice(0, 2)} ${hidden.slice(2)}${tail}`;
 }
 
+/**
+ * Маскировка номера карты. Полный номер в кадр не попадает никогда —
+ * ни настоящий, ни сгенерированный: на стоп-кадре зритель его перепишет.
+ *
+ * maskCard("8134") → "•••• •••• •••• 8134"
+ */
+export function maskCard(last4: string): string {
+  return `•••• •••• •••• ${last4.slice(-4).padStart(4, "0")}`;
+}
+
+/**
+ * Крипто-адрес: открыты только начало и конец, середина скрыта.
+ * Полный адрес не показываем сознательно — иначе его можно проверить
+ * в блокчейне, а любое совпадение с реальным кошельком недопустимо.
+ *
+ * maskWallet("TQm4", "7bXe") → "TQm4••••••••••7bXe"
+ */
+export function maskWallet(head: string, tail: string): string {
+  return `${head}${"•".repeat(10)}${tail}`;
+}
+
 /** "12 мин назад" — принимает готовое число минут, чтобы не зависеть от Date */
 export function agoLabel(minutes: number): string {
   if (minutes < 1) return "только что";

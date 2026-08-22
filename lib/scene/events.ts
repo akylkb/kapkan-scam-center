@@ -11,6 +11,8 @@ export type SceneEventKind =
   | "client.lost"
   | "whale"
   | "withdraw.request"
+  | "drop.burned"
+  | "payout.sent"
   | "alarm"
   | "freeze"
   | "reset";
@@ -61,6 +63,18 @@ export const DIRECTOR_KEYS: readonly DirectorKey[] = [
     hint: "Всё краснеет, домен заблокирован, сессии рвутся",
   },
   {
+    kind: "drop.burned",
+    key: "7",
+    label: "Дроп сгорел",
+    hint: "У дроповода карта краснеет, залив по ней срывается",
+  },
+  {
+    kind: "payout.sent",
+    key: "8",
+    label: "Залив ушёл",
+    hint: "Деньги прошли цепочку, касса и счётчик вывода прыгают",
+  },
+  {
     kind: "freeze",
     key: "0",
     label: "Заморозить анимации",
@@ -76,7 +90,16 @@ export const DIRECTOR_KEYS: readonly DirectorKey[] = [
 
 export type FeedItem = {
   id: number;
-  kind: "deposit" | "lost" | "join" | "call" | "withdraw" | "alarm" | "upgrade";
+  kind:
+    | "deposit"
+    | "lost"
+    | "join"
+    | "call"
+    | "withdraw"
+    | "alarm"
+    | "upgrade"
+    | "payout"
+    | "burn";
   text: string;
   amount?: number;
   /** Тик сцены, когда событие появилось */

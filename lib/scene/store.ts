@@ -1,6 +1,6 @@
 import { Rng } from "@/lib/prng";
 import { usd } from "@/lib/format";
-import { AGENT_ALIASES, pickCountry, pickName } from "@/lib/fixtures/pools";
+import { AGENT_ALIASES, DROP_ALIASES, pickCountry, pickName } from "@/lib/fixtures/pools";
 import type { FeedItem, SceneEventKind } from "./events";
 
 /** Условное «время сцены» на старте: 16:42. Часы в шапке тикают от него. */
@@ -26,6 +26,9 @@ export type SceneState = {
   sigLost: number;
   sigCall: number;
   sigWithdraw: number;
+  /** Экран дроповода: сгоревшая карта и ушедший залив */
+  sigDropBurn: number;
+  sigPayout: number;
   /** Последний зачисленный депозит — для вспышек и всплывающих плашек */
   lastAmount: number;
   lastName: string;
@@ -52,6 +55,8 @@ function initialState(seat: number): SceneState {
     sigLost: 0,
     sigCall: 0,
     sigWithdraw: 0,
+    sigDropBurn: 0,
+    sigPayout: 0,
     lastAmount: 0,
     lastName: "",
     lastFlag: "",
@@ -204,6 +209,40 @@ export class SceneStore {
           kind: "withdraw",
           amount,
           text: `${country.flag} ${name} · заявка на вывод ${usd(amount)} · ЗАБЛОКИРОВАНО`,
+        });
+        break;
+      }
+
+      case "drop.burned": {
+        const alias = rng.pick(DROP_ALIASES);
+        const amount = rng.money(1_200, 9_400);
+        this.set({
+          sigDropBurn: this.state.sigDropBurn + 1,
+          lastAmount: amount,
+          lastName: alias,
+          lastFlag: country.flag,
+        });
+        this.pushFeed({
+          kind: "burn",
+          amount,
+          text: `ДРОП «${alias}» · КАРТА ЗАБЛОКИРОВАНА · залив ${usd(amount)} завис`,
+        });
+        break;
+      }
+
+      case "payout.sent": {
+        const alias = rng.pick(DROP_ALIASES);
+        const amount = rng.money(2_400, 13_800);
+        this.set({
+          sigPayout: this.state.sigPayout + 1,
+          lastAmount: amount,
+          lastName: alias,
+          lastFlag: country.flag,
+        });
+        this.pushFeed({
+          kind: "payout",
+          amount,
+          text: `ЗАЛИВ ${usd(amount)} · «${alias}» → обменник → касса · ЗАКРЫТ`,
         });
         break;
       }

@@ -6,7 +6,9 @@ import {
   selectLastFlag,
   selectLastName,
   selectSigDeposit,
+  selectSigDropBurn,
   selectSigLost,
+  selectSigPayout,
   selectSigWhale,
   selectSigWithdraw,
   useSceneValue,
@@ -16,7 +18,7 @@ import { cx } from "./ui";
 
 type Flash = {
   key: number;
-  tone: "deposit" | "whale" | "lost" | "withdraw";
+  tone: "deposit" | "whale" | "lost" | "withdraw" | "payout" | "burn";
   title: string;
   sub: string;
 };
@@ -42,6 +44,16 @@ const TONE: Record<Flash["tone"], { box: string; title: string; glow: string }> 
     title: "text-amber-300",
     glow: "shadow-[0_0_60px_rgba(245,158,11,0.35)]",
   },
+  payout: {
+    box: "border-emerald-500/60 bg-emerald-950/85",
+    title: "text-emerald-300",
+    glow: "shadow-[0_0_70px_rgba(16,185,129,0.4)]",
+  },
+  burn: {
+    box: "border-rose-500/60 bg-rose-950/85",
+    title: "text-rose-300",
+    glow: "shadow-[0_0_70px_rgba(244,63,94,0.4)]",
+  },
 };
 
 /**
@@ -57,33 +69,43 @@ export function EventFlash() {
   const whale = useSceneValue(selectSigWhale);
   const lost = useSceneValue(selectSigLost);
   const wd = useSceneValue(selectSigWithdraw);
+  const burn = useSceneValue(selectSigDropBurn);
+  const payout = useSceneValue(selectSigPayout);
   const amount = useSceneValue(selectLastAmount);
   const name = useSceneValue(selectLastName);
   const flag = useSceneValue(selectLastFlag);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Предыдущие значения сигналов: сравниваем, чтобы понять, какое событие пришло
-  const prev = useRef({ dep, whale, lost, wd });
+  const prev = useRef({ dep, whale, lost, wd, burn, payout });
 
   useEffect(() => {
     const was = prev.current;
-    prev.current = { dep, whale, lost, wd };
+    prev.current = { dep, whale, lost, wd, burn, payout };
 
     const tone: Flash["tone"] | null =
       whale !== was.whale
         ? "whale"
-        : lost !== was.lost
-          ? "lost"
-          : wd !== was.wd
-            ? "withdraw"
-            : dep !== was.dep
-              ? "deposit"
-              : null;
+        : burn !== was.burn
+          ? "burn"
+          : payout !== was.payout
+            ? "payout"
+            : lost !== was.lost
+              ? "lost"
+              : wd !== was.wd
+                ? "withdraw"
+                : dep !== was.dep
+                  ? "deposit"
+                  : null;
 
     // null означает первый рендер или сброс дубля — плашку не показываем
     if (!tone) return;
 
-    setFlash({ key: was.dep + was.whale + was.lost + was.wd + 1, tone, ...copyFor(tone, amount, name, flag) });
+    setFlash({
+      key: was.dep + was.whale + was.lost + was.wd + was.burn + was.payout + 1,
+      tone,
+      ...copyFor(tone, amount, name, flag),
+    });
 
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setFlash(null), 4000);
@@ -92,7 +114,7 @@ export function EventFlash() {
     };
     // amount/name/flag читаются в момент события и не должны сами его вызывать
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dep, whale, lost, wd]);
+  }, [dep, whale, lost, wd, burn, payout]);
 
   if (!flash) return null;
   const tone = TONE[flash.tone];
@@ -134,6 +156,11 @@ function copyFor(
       return { title: "КЛИЕНТ СОРВАЛСЯ", sub: `${flag} ${name} · звонок прерван` };
     case "withdraw":
       return { title: `ВЫВОД ${usd(amount)}`, sub: `${flag} ${name} · заявка заблокирована` };
+    case "burn":
+      // Здесь lastName — это кличка дропа, а не имя жертвы
+      return { title: "ДРОП СГОРЕЛ", sub: `«${name}» · карта заблокирована · ${usd(amount)} завис` };
+    case "payout":
+      return { title: `ЗАЛИВ ${usd(amount)}`, sub: `«${name}» · цепочка закрыта · нал в кассе` };
     default:
       return { title: `+${usd(amount)}`, sub: `депозит · ${flag} ${name}` };
   }

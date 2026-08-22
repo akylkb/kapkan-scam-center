@@ -12,6 +12,8 @@ const KIND_STYLE: Record<FeedItem["kind"], string> = {
   withdraw: "text-amber-300",
   upgrade: "text-fuchsia-300",
   alarm: "text-rose-300 font-bold",
+  payout: "text-emerald-300",
+  burn: "text-rose-400 font-bold",
 };
 
 const KIND_MARK: Record<FeedItem["kind"], string> = {
@@ -22,6 +24,8 @@ const KIND_MARK: Record<FeedItem["kind"], string> = {
   withdraw: "⛔",
   upgrade: "★",
   alarm: "⚠",
+  payout: "⇄",
+  burn: "✕",
 };
 
 /**
@@ -70,4 +74,6 @@ const PLACEHOLDER: FeedItem[] = [
   { id: -6, kind: "withdraw", at: 0, text: "🇮🇹 Franca Z. · запрос вывода · отклонён" },
   { id: -7, kind: "deposit", at: 0, text: "🇳🇱 Willem de R. · депозит $850 · Sophie Laurent" },
   { id: -8, kind: "lost", at: 0, text: "🇫🇷 Monique F. · отказ · передан в RECOVERY" },
+  { id: -9, kind: "payout", at: 0, text: "ЗАЛИВ $4 200 · «Тюльпан» → обменник → касса · ЗАКРЫТ" },
+  { id: -10, kind: "burn", at: 0, text: "ДРОП «Сивый» · КАРТА ЗАБЛОКИРОВАНА · залив $2 800 завис" },
 ];

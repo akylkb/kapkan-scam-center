@@ -95,6 +95,8 @@ export const selectSigDeposit = (s: SceneState) => s.sigDeposit;
 export const selectSigWhale = (s: SceneState) => s.sigWhale;
 export const selectSigLost = (s: SceneState) => s.sigLost;
 export const selectSigWithdraw = (s: SceneState) => s.sigWithdraw;
+export const selectSigDropBurn = (s: SceneState) => s.sigDropBurn;
+export const selectSigPayout = (s: SceneState) => s.sigPayout;
 export const selectLastAmount = (s: SceneState) => s.lastAmount;
 export const selectLastName = (s: SceneState) => s.lastName;
 export const selectLastFlag = (s: SceneState) => s.lastFlag;

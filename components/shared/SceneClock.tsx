@@ -10,7 +10,7 @@ import { clock } from "@/lib/format";
  * а не от системных часов: иначе дубли не будут стыковаться по монтажу.
  */
 const ZONES = [
-  { label: "ALMATY", offset: 0 },
+  { label: "BISHKEK", offset: 0 },
   { label: "BERLIN", offset: -4 },
   { label: "LONDON", offset: -5 },
   { label: "TORONTO", offset: -10 },

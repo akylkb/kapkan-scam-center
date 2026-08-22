@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Building2, Keyboard, LayoutDashboard, LineChart, Users } from "lucide-react";
+import {
+  Building2,
+  Keyboard,
+  LayoutDashboard,
+  LineChart,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { DIRECTOR_KEYS } from "@/lib/scene/events";
 
@@ -16,6 +23,15 @@ const SCREENS = [
     desc: "Таблица «мамонтов», карточка клиента, софтфон с активным звонком, окно удалённого доступа к экрану жертвы.",
     seats: true,
     accent: "border-emerald-700/50 hover:border-emerald-500",
+  },
+  {
+    href: "/drops",
+    icon: Wallet,
+    title: "CRM дроповода",
+    sub: "Вывод денег · 10 машин",
+    desc: "Реестр подставных карт, очередь заливов, цепочки отмыва до наличных, касса и точки снятия.",
+    seats: true,
+    accent: "border-violet-700/50 hover:border-violet-500",
   },
   {
     href: "/wall",
@@ -67,10 +83,13 @@ export default function Launcher() {
         </header>
 
         <div className="grid grid-cols-2 gap-3">
-          {SCREENS.map((s) => (
+          {SCREENS.map((s, i) => (
             <div
               key={s.href}
-              className={`rounded-[5px] border bg-[#0d0d10] p-4 transition-colors ${s.accent}`}
+              className={`rounded-[5px] border bg-[#0d0d10] p-4 transition-colors ${s.accent} ${
+                // Нечётное число карточек оставило бы дыру в сетке из двух колонок
+                i === SCREENS.length - 1 && SCREENS.length % 2 === 1 ? "col-span-2" : ""
+              }`}
             >
               <div className="flex items-start gap-3">
                 <s.icon className="mt-0.5 h-5 w-5 shrink-0 text-zinc-400" strokeWidth={1.6} />

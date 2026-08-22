@@ -34,7 +34,7 @@ export const BRAND = {
   /** Внутреннее название конторы — в шапке админки */
   org: {
     name: "MERIDIAN GROUP",
-    office: "OFFICE-04 · ALMATY",
+    office: "OFFICE-04 · BISHKEK",
   },
 
   /** VoIP-провайдер в техническом логе */
@@ -45,6 +45,26 @@ export const BRAND = {
   /** Софт удалённого доступа (аналог AnyDesk из расследований) */
   rat: {
     name: "REMOTEVIEW",
+  },
+
+  /** Внутренняя панель отдела вывода — то, что видит дроповод */
+  payout: {
+    name: "TRANZIT",
+    suffix: "OPS",
+    full: "TRANZIT·OPS",
+    version: "2.7.4-int",
+    tagline: "Payout Operations",
+  },
+
+  /** «Обменник», через который деньги уходят в крипту */
+  exchange: {
+    name: "SWIFTBIT",
+    domain: "swiftbit.exchange",
+  },
+
+  /** Кошелёк-накопитель в конце цепочки */
+  vault: {
+    name: "COLDNEST",
   },
 } as const;
 
@@ -58,3 +78,17 @@ export const DESKS = [
 ] as const;
 
 export type DeskId = (typeof DESKS)[number]["id"];
+
+/**
+ * Пулы дропов — то же, что деск у оператора, только в отделе вывода.
+ * Пул определяет, какими картами и в какой стране работает дроповод.
+ */
+export const DROP_POOLS = [
+  { id: "kz-retail", label: "ПУЛ · KZ-РОЗНИЦА", short: "KZ-РОЗН" },
+  { id: "ru-cards", label: "ПУЛ · RU-КАРТЫ", short: "RU-КАРТ" },
+  { id: "uz-transfer", label: "ПУЛ · UZ-ПЕРЕВОДЫ", short: "UZ-ПЕР" },
+  { id: "crypto", label: "ПУЛ · КРИПТА", short: "КРИПТА" },
+  { id: "reserve", label: "ПУЛ · РЕЗЕРВ", short: "РЕЗЕРВ" },
+] as const;
+
+export type DropPoolId = (typeof DROP_POOLS)[number]["id"];
