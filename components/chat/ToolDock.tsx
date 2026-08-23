@@ -32,6 +32,9 @@ export function ToolDock({
   onTool,
   extraOtp,
   extraHits,
+  callStart,
+  onCall,
+  onHangUp,
 }: {
   desk: ChatDesk;
   thread: Thread;
@@ -41,6 +44,13 @@ export function ToolDock({
   extraOtp: OtpCode[];
   /** Переходы по ссылке, добавленные режиссёром */
   extraHits: number;
+  /**
+   * Разговор живёт выше дока: иначе переключение вкладки размонтирует
+   * панель голоса и звонок оборвётся сам собой.
+   */
+  callStart: number | null;
+  onCall: (tick: number) => void;
+  onHangUp: () => void;
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden border-t border-zinc-800">
@@ -63,7 +73,15 @@ export function ToolDock({
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">
-        {tool === "voice" && <VoicePanel thread={thread} seat={desk.seat} />}
+        {tool === "voice" && (
+          <VoicePanel
+            thread={thread}
+            seat={desk.seat}
+            callStart={callStart}
+            onCall={onCall}
+            onHangUp={onHangUp}
+          />
+        )}
         {tool === "video" && <DeepfakePanel thread={thread} seat={desk.seat} />}
         {tool === "link" && <LinkPanel link={desk.link} extraHits={extraHits} />}
         {tool === "otp" && <OtpPanel codes={[...extraOtp, ...desk.otp]} />}

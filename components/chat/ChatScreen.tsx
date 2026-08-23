@@ -16,6 +16,7 @@ import {
 } from "@/lib/fixtures/threads";
 import { usd } from "@/lib/format";
 import {
+  selectCallStart,
   selectEpoch,
   selectSigBan,
   selectSigCall,
@@ -70,8 +71,12 @@ export function ChatScreen({ seat }: { seat: number }) {
   const [extraOtp, setExtraOtp] = useState<OtpCode[]>([]);
   const [extraHits, setExtraHits] = useState(0);
   const [bannedPersonaId, setBannedPersonaId] = useState<string | null>(null);
+  // Тик, с которого идёт разговор. Держим здесь, а не в панели голоса:
+  // иначе переключение вкладки дока обрывало бы звонок
+  const [callStart, setCallStart] = useState<number | null>(null);
 
   const epoch = useSceneValue(selectEpoch);
+  const sceneCallStart = useSceneValue(selectCallStart);
   const sigLink = useSceneValue(selectSigLink);
   const sigBan = useSceneValue(selectSigBan);
   const sigDeposit = useSceneValue(selectSigDeposit);
@@ -221,6 +226,8 @@ export function ChatScreen({ seat }: { seat: number }) {
     const th = threads.find((t) => t.id === selectedId) ?? threads[0];
     const line = makeSuspicionLine(rng);
 
+    // Клиент бросает трубку вместе с доверием
+    setCallStart(null);
     setOverrides((prev) => ({
       ...prev,
       [th.id]: { ...prev[th.id], status: "suspicious", blown: true },
@@ -241,10 +248,13 @@ export function ChatScreen({ seat }: { seat: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sigLost]);
 
-  // Ctrl+Alt+1 — звонок: док сам прыгает на подмену голоса
+  // Ctrl+Alt+1 — звонок: док прыгает на подмену голоса, таймер идёт с нуля
+  // (store выставил callStartTick текущим тиком)
   useEffect(() => {
     if (sigCall === 0) return;
     setTool("voice");
+    setCallStart(sceneCallStart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sigCall]);
 
   // Ctrl+Alt+R — сброс дубля
@@ -259,6 +269,7 @@ export function ChatScreen({ seat }: { seat: number }) {
     setExtraOtp([]);
     setExtraHits(0);
     setBannedPersonaId(null);
+    setCallStart(null);
   }, [epoch, openingId]);
 
   return (
@@ -299,6 +310,9 @@ export function ChatScreen({ seat }: { seat: number }) {
               onTool={setTool}
               extraOtp={extraOtp}
               extraHits={extraHits}
+              callStart={callStart}
+              onCall={setCallStart}
+              onHangUp={() => setCallStart(null)}
             />
           </div>
         </aside>

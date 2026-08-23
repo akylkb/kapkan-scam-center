@@ -1,12 +1,7 @@
 "use client";
 
 import { Mic, PhoneOff, Waves } from "lucide-react";
-import {
-  selectCallActive,
-  selectCallStart,
-  useSceneValue,
-  useTick,
-} from "@/lib/scene/SceneProvider";
+import { useTick } from "@/lib/scene/SceneProvider";
 import { mmss } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { VOICE_PRESETS } from "@/lib/fixtures/pools";
@@ -19,15 +14,31 @@ const BARS = 34;
 /**
  * Подмена голоса.
  *
+ * По умолчанию панель в покое: ни таймера, ни осциллограммы. Разговор
+ * начинается по кнопке (или по Ctrl+Alt+1) и всегда с 00:00 — иначе на
+ * монтаже таймер не состыкуется между дублями.
+ *
  * Осциллограмма собрана из CSS-анимаций с задержкой от индекса — один
  * общий тикер сцены вместо трёх десятков таймеров, и стоп-кадр
  * (Ctrl+Alt+0) гасит её вместе со всем остальным.
  */
-export function VoicePanel({ thread, seat }: { thread: Thread; seat: number }) {
+export function VoicePanel({
+  thread,
+  seat,
+  callStart,
+  onCall,
+  onHangUp,
+}: {
+  thread: Thread;
+  seat: number;
+  /** Тик начала разговора; null — трубка не поднята */
+  callStart: number | null;
+  onCall: (tick: number) => void;
+  onHangUp: () => void;
+}) {
   const tick = useTick();
-  const active = useSceneValue(selectCallActive);
-  const start = useSceneValue(selectCallStart);
-  const seconds = Math.max(0, Math.floor((tick - start) / 4));
+  const active = callStart !== null;
+  const seconds = active ? Math.max(0, Math.floor((tick - callStart) / 4)) : 0;
 
   // Пресет зависит от схемы: «служба безопасности» звучит не так, как курьер
   const preset =
@@ -65,7 +76,7 @@ export function VoicePanel({ thread, seat }: { thread: Thread; seat: number }) {
             active ? "text-cyan-300" : "text-zinc-700",
           )}
         >
-          {mmss(active ? seconds : 0)}
+          {mmss(seconds)}
         </span>
       </div>
 
@@ -117,28 +128,59 @@ export function VoicePanel({ thread, seat }: { thread: Thread; seat: number }) {
       </div>
 
       <div className="mt-auto flex items-center justify-between font-mono text-[9px] text-zinc-600">
-        <span className="flex items-center gap-1">
-          <span className="h-[5px] w-[5px] animate-pulse rounded-full bg-rose-500" />
-          ЗАПИСЬ ОТКЛ · буфер 0 сек
-        </span>
-        <span className="tnum">
-          задержка{" "}
-          <DriftNumber
-            base={128}
-            amplitude={22}
-            seed={`lat-${seat}`}
-            format={(v) => `${Math.round(v)} мс`}
-            className="text-zinc-400"
-          />
-        </span>
+        {active ? (
+          <>
+            <span className="flex items-center gap-1">
+              <span className="h-[5px] w-[5px] animate-pulse rounded-full bg-rose-500" />
+              ЗАПИСЬ ОТКЛ · буфер 0 сек
+            </span>
+            <span className="tnum">
+              задержка{" "}
+              <DriftNumber
+                base={128}
+                amplitude={22}
+                seed={`lat-${seat}`}
+                format={(v) => `${Math.round(v)} мс`}
+                className="text-zinc-400"
+              />
+            </span>
+          </>
+        ) : (
+          <>
+            <span>ЛИНИЯ СВОБОДНА · ЗАПИСЬ ОТКЛ</span>
+            <span>шлюз {BRAND.voip.name}</span>
+          </>
+        )}
       </div>
 
+      {/*
+        Активна всегда одна кнопка из двух: на крупном плане должно быть
+        видно, что именно актёр сейчас нажимает.
+      */}
       <div className="mt-1.5 grid grid-cols-2 gap-1">
-        <button className="flex items-center justify-center gap-1.5 rounded-[3px] border border-cyan-800/60 bg-cyan-950/40 py-1.5 text-[10.5px] text-cyan-300 transition-colors hover:bg-cyan-900/40">
+        <button
+          onClick={() => onCall(tick)}
+          disabled={active}
+          className={cx(
+            "flex items-center justify-center gap-1.5 rounded-[3px] border py-1.5 text-[10.5px] transition-colors",
+            active
+              ? "border-zinc-800 bg-zinc-900/50 text-zinc-600"
+              : "border-cyan-800/60 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/40",
+          )}
+        >
           <Mic className="h-3 w-3" strokeWidth={1.9} />
           Позвонить с подменой
         </button>
-        <button className="flex items-center justify-center gap-1.5 rounded-[3px] border border-rose-800/60 bg-rose-950/40 py-1.5 text-[10.5px] text-rose-300 transition-colors hover:bg-rose-900/40">
+        <button
+          onClick={onHangUp}
+          disabled={!active}
+          className={cx(
+            "flex items-center justify-center gap-1.5 rounded-[3px] border py-1.5 text-[10.5px] transition-colors",
+            active
+              ? "border-rose-800/60 bg-rose-950/40 text-rose-300 hover:bg-rose-900/40"
+              : "border-zinc-800 bg-zinc-900/50 text-zinc-600",
+          )}
+        >
           <PhoneOff className="h-3 w-3" strokeWidth={1.9} />
           Сбросить
         </button>
