@@ -1,9 +1,12 @@
 import { CrmScreen } from "@/components/crm/CrmScreen";
 import { SceneShell } from "@/components/shared/SceneShell";
-import { parseSeat } from "@/lib/seat";
+import { parseSeat, seatStaticParams } from "@/lib/seat";
 
-export default async function CrmPage({ searchParams }: PageProps<"/crm">) {
-  const seat = parseSeat((await searchParams).seat);
+/** Каждое место — отдельный готовый HTML: /crm/1/ … /crm/99/ */
+export const generateStaticParams = seatStaticParams;
+
+export default async function CrmPage({ params }: PageProps<"/crm/[seat]">) {
+  const seat = parseSeat((await params).seat);
   return (
     <SceneShell seat={seat}>
       <CrmScreen seat={seat} />

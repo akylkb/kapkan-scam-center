@@ -119,7 +119,7 @@ export default function Launcher() {
                   {SEATS.map((n) => (
                     <Link
                       key={n}
-                      href={`${s.href}?seat=${n}`}
+                      href={`${s.href}/${n}/`}
                       className="tnum flex h-8 w-9 items-center justify-center rounded-[3px] border border-zinc-800 bg-zinc-900/60 font-mono text-[12px] text-zinc-300 hover:border-emerald-600 hover:bg-emerald-950/50 hover:text-emerald-300"
                     >
                       {String(n).padStart(2, "0")}
