@@ -9,7 +9,7 @@ import { parseSeat } from "@/lib/seat";
  * страницы места не доедет — поэтому /crm сразу уводит на /crm/7/.
  * Экран чёрный: в кадр эта страница не попадает, висит доли секунды.
  */
-export function SeatRedirect({ screen }: { screen: "crm" | "drops" | "chat" }) {
+export function SeatRedirect({ screen }: { screen: "crm" | "drops" | "chat" | "victim" }) {
   useEffect(() => {
     const seat = parseSeat(new URLSearchParams(window.location.search).get("seat") ?? undefined);
     window.location.replace(`/${screen}/${seat}/`);

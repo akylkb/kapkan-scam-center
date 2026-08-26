@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { useLiveBus } from "@/lib/live/LiveProvider";
 import { SceneStore, type SceneState } from "./store";
 import { DIRECTOR_KEYS } from "./events";
 
@@ -22,11 +23,14 @@ export function SceneProvider({
   children: ReactNode;
 }) {
   const [store] = useState(() => new SceneStore(seat));
+  // Шина живёт выше по дереву (SceneShell): по ней события режиссёра уходят
+  // не только в соседние вкладки, но и на соседние машины площадки
+  const bus = useLiveBus();
 
   useEffect(() => {
-    store.start();
+    store.start(bus);
     return () => store.stop();
-  }, [store]);
+  }, [store, bus]);
 
   // Режиссёрские хоткеи: Ctrl+Alt+<клавиша>. Никакого визуального отклика —
   // на площадке нажатие не должно быть заметно в кадре.

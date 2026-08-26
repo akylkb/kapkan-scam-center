@@ -8,7 +8,9 @@ import {
   type Thread,
 } from "@/lib/fixtures/threads";
 import { SCHEME_META } from "@/lib/fixtures/threads";
+import type { Attach } from "@/lib/fixtures/threads";
 import type { Persona } from "@/lib/fixtures/personas";
+import type { PhishLink } from "@/lib/fixtures/chatdesk";
 import { Chip, LiveDot, cx } from "@/components/shared/ui";
 import { MessageBubble } from "./MessageBubble";
 import { SuggestBar } from "./SuggestBar";
@@ -20,8 +22,11 @@ export function ChatThread({
   persona,
   personaBanned,
   blown,
+  typing,
+  link,
   onTool,
   onSend,
+  onTyping,
 }: {
   /** Реплики лежат в thread.messages новыми вперёд: лента рисуется
       flex-col-reverse и сама упирается в нижний край */
@@ -29,8 +34,12 @@ export function ChatThread({
   persona: Persona;
   personaBanned: boolean;
   blown: boolean;
+  /** Жертва набирает ответ прямо сейчас — живой сигнал с её телефона */
+  typing: boolean;
+  link: PhishLink;
   onTool: (tool: ToolId) => void;
-  onSend: (text: string) => void;
+  onSend: (text: string, attach?: Attach) => void;
+  onTyping: () => void;
 }) {
   const ch = CHANNEL_META[thread.channel];
   const status = THREAD_STATUS_META[thread.status];
@@ -59,9 +68,29 @@ export function ChatThread({
               {ch.label} {thread.handle}
             </span>
           </p>
-          <p className="truncate font-mono text-[9px] tracking-[0.08em] text-zinc-600">
-            {thread.id} · {thread.city} · {thread.phone} · личина {persona.handle}
-          </p>
+          {/*
+            «печатает…» приходит с телефона жертвы и гаснет само через три
+            секунды тишины. На крупном плане это главный признак того, что
+            по ту сторону живой человек, а не заготовка.
+          */}
+          {typing ? (
+            <p className="flex items-center gap-1 truncate font-mono text-[9px] tracking-[0.08em] text-cyan-300">
+              печатает
+              <span className="flex gap-[2px]">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="h-[3px] w-[3px] animate-blink rounded-full bg-cyan-400"
+                    style={{ animationDelay: `${i * 200}ms` }}
+                  />
+                ))}
+              </span>
+            </p>
+          ) : (
+            <p className="truncate font-mono text-[9px] tracking-[0.08em] text-zinc-600">
+              {thread.id} · {thread.city} · {thread.phone} · личина {persona.handle}
+            </p>
+          )}
         </div>
 
         <Chip className={cx(status.bg, status.border, status.text, "shrink-0")}>
@@ -128,12 +157,14 @@ export function ChatThread({
         </div>
       </div>
 
-      <SuggestBar thread={thread} blown={blown} onTool={onTool} />
+      {/* <SuggestBar thread={thread} blown={blown} onTool={onTool} /> */}
       <Composer
         thread={thread}
         persona={persona}
         bannedStatus={personaBanned ? "banned" : persona.status}
+        link={link}
         onSend={onSend}
+        onTyping={onTyping}
       />
     </div>
   );

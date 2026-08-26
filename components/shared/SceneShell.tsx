@@ -7,17 +7,33 @@ import {
   selectFrozen,
   useSceneValue,
 } from "@/lib/scene/SceneProvider";
+import { LiveProvider } from "@/lib/live/LiveProvider";
 import { BRAND } from "@/lib/brand";
 import { cx } from "./ui";
 
 /**
- * Обёртка любого экрана: часы сцены, хоткеи режиссёра, стоп-кадр и тревога.
+ * Обёртка любого экрана: живая шина, часы сцены, хоткеи режиссёра,
+ * стоп-кадр и тревога.
+ *
+ * LiveProvider стоит выше SceneProvider намеренно: движок сцены рассылает
+ * команды режиссёра через ту же шину, что и переписка.
  */
-export function SceneShell({ seat, children }: { seat: number; children: ReactNode }) {
+export function SceneShell({
+  seat,
+  sender = "screen",
+  children,
+}: {
+  seat: number;
+  /** Метка экрана в id сообщений — видно, кто написал реплику */
+  sender?: string;
+  children: ReactNode;
+}) {
   return (
-    <SceneProvider seat={seat}>
-      <SceneBody>{children}</SceneBody>
-    </SceneProvider>
+    <LiveProvider seat={seat} sender={sender}>
+      <SceneProvider seat={seat}>
+        <SceneBody>{children}</SceneBody>
+      </SceneProvider>
+    </LiveProvider>
   );
 }
 

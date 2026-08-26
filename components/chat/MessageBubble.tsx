@@ -27,6 +27,10 @@ export function MessageBubble({ msg }: { msg: Message }) {
 
   const out = msg.from === "operator";
 
+  // Две галочки = реплика дошла. У живой реплики это подтверждает мост
+  // (эхо от сервера), у фикстурной — возраст: свежую «ещё не прочли»
+  const read = msg.live ? msg.delivered === true : msg.agoMin > 30;
+
   return (
     <div className={cx("flex px-4 py-[3px]", out ? "justify-end" : "justify-start")}>
       <div
@@ -51,7 +55,7 @@ export function MessageBubble({ msg }: { msg: Message }) {
         >
           {agoLabel(msg.agoMin)}
           {out &&
-            (msg.agoMin > 30 ? (
+            (read ? (
               <CheckCheck className="h-2.5 w-2.5 text-cyan-500" />
             ) : (
               <Check className="h-2.5 w-2.5 text-zinc-600" />

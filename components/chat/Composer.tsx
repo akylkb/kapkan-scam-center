@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   FileCheck2,
   Image as ImageIcon,
@@ -12,36 +12,109 @@ import {
   Wallet,
 } from "lucide-react";
 import { BRAND } from "@/lib/brand";
+import { Rng } from "@/lib/prng";
+import { usd } from "@/lib/format";
 import type { Persona, PersonaStatus } from "@/lib/fixtures/personas";
-import type { Thread } from "@/lib/fixtures/threads";
+import type { PhishLink } from "@/lib/fixtures/chatdesk";
+import type { Attach, Thread } from "@/lib/fixtures/threads";
+import { TYPING_THROTTLE_MS } from "@/lib/live/protocol";
 import { cx } from "@/components/shared/ui";
 
 /**
  * Поле ввода.
  *
- * Слева — генератор доказательств: чек, трек, скрин баланса, фото товара.
- * Одно нажатие, и в переписке появляется «подтверждение», которого нет.
+ * Слева — генератор доказательств: чек, трек, скрин баланса, фото товара,
+ * фишинговая ссылка. Одно нажатие, и в переписке появляется «подтверждение»,
+ * которого нет, — на телефоне жертвы оно всплывает в ту же секунду.
  */
 const PROOFS = [
-  { icon: FileCheck2, label: "Чек" },
-  { icon: Package, label: "Трек" },
-  { icon: Wallet, label: "Баланс" },
-  { icon: ImageIcon, label: "Фото" },
-  { icon: Link2, label: "Ссылка" },
-];
+  { kind: "receipt", icon: FileCheck2, label: "Чек" },
+  { kind: "track", icon: Package, label: "Трек" },
+  { kind: "balance", icon: Wallet, label: "Баланс" },
+  { kind: "photo", icon: ImageIcon, label: "Фото" },
+  { kind: "link", icon: Link2, label: "Ссылка" },
+] as const satisfies readonly { kind: Attach["kind"]; icon: typeof FileCheck2; label: string }[];
+
+/**
+ * Что именно уходит жертве при нажатии на кнопку доказательства.
+ *
+ * Числа берутся из детерминированного генератора, засеянного диалогом:
+ * дубль 1 и дубль 7 должны показать один и тот же трек-номер.
+ */
+function makeProof(
+  kind: Attach["kind"],
+  thread: Thread,
+  link: PhishLink,
+): { text: string; attach: Attach } {
+  const rng = new Rng(`proof-${thread.id}-${kind}`);
+
+  switch (kind) {
+    case "receipt":
+      return {
+        text: "Отправляю чек, оплата прошла — всё зафиксировано в системе.",
+        attach: {
+          kind,
+          title: `Чек №${rng.int(100_000, 999_999)}`,
+          sub: `${BRAND.psp.name} · ${usd(thread.askAmount)} · проведён`,
+        },
+      };
+    case "track":
+      return {
+        text: "Посылка уже в пути, вот трек-номер — отслеживайте.",
+        attach: {
+          kind,
+          title: `${rng.pick(["RS", "CT", "MX"])}${rng.int(100_000_000, 999_999_999)}RU`,
+          sub: `${BRAND.delivery.name} · принято в сортировочном центре`,
+        },
+      };
+    case "balance":
+      return {
+        text: "Смотрите сами: деньги на счёте, вывод откроется после подтверждения.",
+        attach: {
+          kind,
+          title: usd(thread.askAmount * rng.int(3, 9)),
+          sub: `${BRAND.broker.name} · личный кабинет · скриншот`,
+        },
+      };
+    case "photo":
+      return {
+        text: "Вот фото, состояние отличное — как и договаривались.",
+        attach: {
+          kind,
+          title: `IMG_${rng.int(1000, 9999)}.jpg`,
+          sub: `${thread.item} · ${rng.int(2, 8)} фото в альбоме`,
+        },
+      };
+    case "link":
+      return {
+        text: "Оформление по ссылке, займёт минуту. Реквизиты вводите как в банке.",
+        attach: {
+          kind,
+          title: link.url,
+          sub: `${link.label} · защищённое соединение`,
+        },
+      };
+  }
+}
 
 export function Composer({
   thread,
   persona,
   bannedStatus,
+  link,
   onSend,
+  onTyping,
 }: {
   thread: Thread;
   persona: Persona;
   /** Личина в бане — писать нечем, поле блокируется */
   bannedStatus: PersonaStatus;
-  /** Отправить реплику в ленту чата */
-  onSend: (text: string) => void;
+  /** Фишинговая ссылка рабочего места — уходит по кнопке «Ссылка» */
+  link: PhishLink;
+  /** Отправить реплику в ленту чата и на телефон жертвы */
+  onSend: (text: string, attach?: Attach) => void;
+  /** Актёр набирает текст: у жертвы загорается «печатает…» */
+  onTyping: () => void;
 }) {
   const banned = bannedStatus === "banned";
 
@@ -49,11 +122,22 @@ export function Composer({
   // перемонтируется вместе с ChatThread, и поле само очищается
   const [draft, setDraft] = useState("");
 
+  // «Печатает…» повторяется не чаще раза в секунду: на каждую нажатую клавишу
+  // слать сообщение по сети незачем, а актёр печатает быстро
+  const typedAt = useRef(0);
+
   function send() {
     const text = draft.trim();
     if (!text || banned) return;
     onSend(text);
     setDraft("");
+  }
+
+  function signalTyping() {
+    const now = Date.now();
+    if (now - typedAt.current < TYPING_THROTTLE_MS) return;
+    typedAt.current = now;
+    onTyping();
   }
 
   return (
@@ -68,6 +152,11 @@ export function Composer({
           <button
             key={p.label}
             disabled={banned}
+            onClick={() => {
+              if (banned) return;
+              const proof = makeProof(p.kind, thread, link);
+              onSend(proof.text, proof.attach);
+            }}
             className={cx(
               "flex items-center gap-1 rounded-[3px] border px-1.5 py-[3px] font-mono text-[9px] tracking-[0.06em] transition-colors",
               banned
@@ -104,7 +193,10 @@ export function Composer({
           */
           <input
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              signalTyping();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();

@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LineChart,
   MessageSquare,
+  Smartphone,
   Users,
   Wallet,
 } from "lucide-react";
@@ -42,6 +43,15 @@ const SCREENS = [
     desc: "Переписка с жертвой, личины-аккаунты, звонок с подменой голоса, видео с подменой лица, фишинговые ссылки и перехват СМС-кодов.",
     seats: true,
     accent: "border-cyan-700/50 hover:border-cyan-500",
+  },
+  {
+    href: "/victim",
+    icon: Smartphone,
+    title: "Телефон жертвы",
+    sub: "Живой чат · по номеру места",
+    desc: "Вторая половина переписки: актёр печатает ответы, и они мгновенно приходят чатеру на /chat с тем же номером. Экран сам следует за диалогом, который открыл оператор.",
+    seats: true,
+    accent: "border-rose-700/50 hover:border-rose-500",
   },
   {
     href: "/wall",

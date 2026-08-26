@@ -7,6 +7,7 @@ import {
   pickCountry,
   pickName,
 } from "@/lib/fixtures/pools";
+import type { LiveBus } from "@/lib/live/bus";
 import type { FeedItem, SceneEventKind } from "./events";
 
 /** Условное «время сцены» на старте: 16:42. Часы в шапке тикают от него. */
@@ -81,7 +82,8 @@ export class SceneStore {
   state: SceneState;
   private listeners = new Set<() => void>();
   private timer: ReturnType<typeof setInterval> | null = null;
-  private channel: BroadcastChannel | null = null;
+  private bus: LiveBus | null = null;
+  private unsubscribe: (() => void) | null = null;
   private feedId = 1;
   private readonly seat: number;
 
@@ -108,8 +110,18 @@ export class SceneStore {
     this.emit();
   }
 
-  /** Запускает часы сцены и автогенерацию ленты событий */
-  start() {
+  /**
+   * Запускает часы сцены и автогенерацию ленты событий.
+   *
+   * Шина — общая с живым чатом (lib/live/bus.ts): раньше события ходили по
+   * отдельному BroadcastChannel и не выходили за пределы машины. Теперь
+   * Ctrl+Alt+R на машине чатера сбрасывает и телефон жертвы на соседней —
+   * без этого дубли не склеятся.
+   *
+   * Тики при этом по-прежнему у каждой вкладки свои: синхронизировать часы
+   * незачем, а трафик четыре раза в секунду на десять машин — незачем тем более.
+   */
+  start(bus: LiveBus | null) {
     if (this.timer) return;
     this.timer = setInterval(() => {
       if (this.state.frozen) return;
@@ -120,25 +132,27 @@ export class SceneStore {
       if (crossedSecond) this.autoFeed(second);
     }, TICK_MS);
 
-    if (typeof BroadcastChannel !== "undefined") {
-      this.channel = new BroadcastChannel("kapkan-scene");
-      this.channel.onmessage = (e: MessageEvent<{ kind: SceneEventKind }>) => {
-        this.apply(e.data.kind);
-      };
-    }
+    this.bus = bus;
+    this.unsubscribe =
+      bus?.subscribe((msg, meta) => {
+        // Своё эхо уже применено в dispatch — второй раз событие не играем
+        if (msg.t !== "scene" || meta.own) return;
+        this.apply(msg.kind);
+      }) ?? null;
   }
 
   stop() {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    this.channel?.close();
-    this.channel = null;
+    this.unsubscribe?.();
+    this.unsubscribe = null;
+    this.bus = null;
   }
 
-  /** Событие от режиссёра: применяем локально и рассылаем в другие вкладки */
+  /** Событие от режиссёра: применяем локально и рассылаем на другие экраны */
   dispatch(kind: SceneEventKind) {
     this.apply(kind);
-    this.channel?.postMessage({ kind });
+    this.bus?.send({ t: "scene", kind });
   }
 
   private apply(kind: SceneEventKind) {
