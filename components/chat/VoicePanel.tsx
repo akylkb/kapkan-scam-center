@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, PhoneOff, Waves } from "lucide-react";
+import { PhoneCall, Waves } from "lucide-react";
 import { useTick } from "@/lib/scene/SceneProvider";
 import { mmss } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
@@ -8,15 +8,17 @@ import { VOICE_PRESETS } from "@/lib/fixtures/pools";
 import type { Thread } from "@/lib/fixtures/threads";
 import { DriftNumber } from "@/components/shared/LiveNumber";
 import { Chip, Meter, cx } from "@/components/shared/ui";
+import type { Call } from "./CallOverlay";
 
 const BARS = 34;
 
 /**
- * Подмена голоса.
+ * Подмена голоса — настройки линии.
  *
- * По умолчанию панель в покое: ни таймера, ни осциллограммы. Разговор
- * начинается по кнопке (или по Ctrl+Alt+1) и всегда с 00:00 — иначе на
- * монтаже таймер не состыкуется между дублями.
+ * Панель отвечает за то, каким голосом будем говорить; сам разговор идёт
+ * в модалке по центру экрана ([CallOverlay](./CallOverlay.tsx)). Здесь его
+ * только начинают — одной большой кнопкой: на общем плане должно читаться,
+ * что актёр нажал именно «позвонить», а не что-то из мелкой панели.
  *
  * Осциллограмма собрана из CSS-анимаций с задержкой от индекса — один
  * общий тикер сцены вместо трёх десятков таймеров, и стоп-кадр
@@ -25,20 +27,23 @@ const BARS = 34;
 export function VoicePanel({
   thread,
   seat,
-  callStart,
+  call,
   onCall,
-  onHangUp,
 }: {
   thread: Thread;
   seat: number;
-  /** Тик начала разговора; null — трубка не поднята */
-  callStart: number | null;
+  /** Идущий разговор; null — трубка не поднята */
+  call: Call | null;
   onCall: (tick: number) => void;
-  onHangUp: () => void;
 }) {
   const tick = useTick();
-  const active = callStart !== null;
-  const seconds = active ? Math.max(0, Math.floor((tick - callStart) / 4)) : 0;
+  const active = call !== null;
+  // Пока идут гудки, линия ещё молчит: осциллограмма и таймер оживают
+  // только когда жертва взяла трубку
+  const connected = call !== null && tick - call.startTick >= call.ringTicks;
+  const seconds = connected
+    ? Math.max(0, Math.floor((tick - call.startTick - call.ringTicks) / 4))
+    : 0;
 
   // Пресет зависит от схемы: «служба безопасности» звучит не так, как курьер
   const preset =
@@ -53,10 +58,15 @@ export function VoicePanel({
         <span className="font-mono text-[8.5px] tracking-[0.18em] text-zinc-600 uppercase">
           Подмена голоса · {BRAND.voice.name}
         </span>
-        {active ? (
+        {connected ? (
           <Chip className="border-cyan-700/50 bg-cyan-500/10 text-cyan-300">
             <span className="h-[4px] w-[4px] animate-pulse rounded-full bg-cyan-400" />
             В ЭФИРЕ
+          </Chip>
+        ) : active ? (
+          <Chip className="border-amber-700/50 bg-amber-500/10 text-amber-300">
+            <span className="h-[4px] w-[4px] animate-pulse rounded-full bg-amber-400" />
+            ВЫЗОВ
           </Chip>
         ) : (
           <Chip className="border-zinc-700/60 bg-zinc-800/60 text-zinc-500">ГОТОВ</Chip>
@@ -73,7 +83,7 @@ export function VoicePanel({
         <span
           className={cx(
             "tnum font-mono text-[22px] leading-none font-semibold",
-            active ? "text-cyan-300" : "text-zinc-700",
+            connected ? "text-cyan-300" : "text-zinc-700",
           )}
         >
           {mmss(seconds)}
@@ -87,10 +97,10 @@ export function VoicePanel({
             key={i}
             className={cx(
               "flex-1 origin-center rounded-[1px]",
-              active ? "animate-wave bg-cyan-400/80" : "h-[2px] bg-zinc-800",
+              connected ? "animate-wave bg-cyan-400/80" : "h-[2px] bg-zinc-800",
             )}
             style={
-              active
+              connected
                 ? {
                     height: "100%",
                     animationDelay: `${(i * 61) % 900}ms`,
@@ -128,7 +138,7 @@ export function VoicePanel({
       </div>
 
       <div className="mt-auto flex items-center justify-between font-mono text-[9px] text-zinc-600">
-        {active ? (
+        {connected ? (
           <>
             <span className="flex items-center gap-1">
               <span className="h-[5px] w-[5px] animate-pulse rounded-full bg-rose-500" />
@@ -154,37 +164,27 @@ export function VoicePanel({
       </div>
 
       {/*
-        Активна всегда одна кнопка из двух: на крупном плане должно быть
-        видно, что именно актёр сейчас нажимает.
+        Главное действие вкладки — одна крупная кнопка во всю ширину.
+        Разговор дальше ведётся в модалке, там же и сброс: две кнопки рядом
+        заставляли актёра целиться, а на крупном плане это видно.
       */}
-      <div className="mt-1.5 grid grid-cols-2 gap-1">
-        <button
-          onClick={() => onCall(tick)}
-          disabled={active}
-          className={cx(
-            "flex items-center justify-center gap-1.5 rounded-[3px] border py-1.5 text-[10.5px] transition-colors",
-            active
-              ? "border-zinc-800 bg-zinc-900/50 text-zinc-600"
-              : "border-cyan-800/60 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/40",
-          )}
-        >
-          <Mic className="h-3 w-3" strokeWidth={1.9} />
-          Позвонить с подменой
-        </button>
-        <button
-          onClick={onHangUp}
-          disabled={!active}
-          className={cx(
-            "flex items-center justify-center gap-1.5 rounded-[3px] border py-1.5 text-[10.5px] transition-colors",
-            active
-              ? "border-rose-800/60 bg-rose-950/40 text-rose-300 hover:bg-rose-900/40"
-              : "border-zinc-800 bg-zinc-900/50 text-zinc-600",
-          )}
-        >
-          <PhoneOff className="h-3 w-3" strokeWidth={1.9} />
-          Сбросить
-        </button>
-      </div>
+      <button
+        onClick={() => onCall(tick)}
+        disabled={active}
+        className={cx(
+          "mt-1.5 flex h-[46px] w-full items-center justify-center gap-2 rounded-[4px] border text-[14px] font-medium transition-colors",
+          active
+            ? "border-zinc-800 bg-zinc-900/50 text-zinc-600"
+            : "border-cyan-600/70 bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25",
+        )}
+      >
+        <PhoneCall className="h-[18px] w-[18px]" strokeWidth={1.9} />
+        {connected
+          ? `Идёт разговор · ${mmss(seconds)}`
+          : active
+            ? "Идёт вызов…"
+            : "Позвонить с подменой"}
+      </button>
     </div>
   );
 }

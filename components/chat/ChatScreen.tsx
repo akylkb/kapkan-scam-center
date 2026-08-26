@@ -38,6 +38,7 @@ import { PersonaRail } from "./PersonaRail";
 import { ThreadList } from "./ThreadList";
 import { ChatThread } from "./ChatThread";
 import { VictimCard } from "./VictimCard";
+import { CallOverlay, RING_TICKS, type Call } from "./CallOverlay";
 import { ToolDock, type ToolId } from "./ToolDock";
 
 /** Что режиссёр поменял в конкретном диалоге по ходу дубля */
@@ -65,9 +66,9 @@ export function ChatScreen({ seat }: { seat: number }) {
   const [extraOtp, setExtraOtp] = useState<OtpCode[]>([]);
   const [extraHits, setExtraHits] = useState(0);
   const [bannedPersonaId, setBannedPersonaId] = useState<string | null>(null);
-  // Тик, с которого идёт разговор. Держим здесь, а не в панели голоса:
-  // иначе переключение вкладки дока обрывало бы звонок
-  const [callStart, setCallStart] = useState<number | null>(null);
+  // Разговор держим здесь, а не в панели голоса: иначе переключение вкладки
+  // дока обрывало бы звонок. Отсюда же он рисуется модалкой поверх экрана
+  const [call, setCall] = useState<Call | null>(null);
 
   const epoch = useSceneValue(selectEpoch);
   const sceneCallStart = useSceneValue(selectCallStart);
@@ -293,7 +294,7 @@ export function ChatScreen({ seat }: { seat: number }) {
     const line = makeSuspicionLine(rng);
 
     // Клиент бросает трубку вместе с доверием
-    setCallStart(null);
+    setCall(null);
     setOverrides((prev) => ({
       ...prev,
       [th.id]: { ...prev[th.id], status: "suspicious", blown: true },
@@ -315,11 +316,12 @@ export function ChatScreen({ seat }: { seat: number }) {
   }, [sigLost]);
 
   // Ctrl+Alt+1 — звонок: док прыгает на подмену голоса, таймер идёт с нуля
-  // (store выставил callStartTick текущим тиком)
+  // (store выставил callStartTick текущим тиком). Гудков нет: звонок входящий,
+  // трубку уже подняли — модалка открывается сразу на разговоре
   useEffect(() => {
     if (sigCall === 0) return;
     setTool("voice");
-    setCallStart(sceneCallStart);
+    setCall({ startTick: sceneCallStart, ringTicks: 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sigCall]);
 
@@ -335,7 +337,7 @@ export function ChatScreen({ seat }: { seat: number }) {
     setExtraOtp([]);
     setExtraHits(0);
     setBannedPersonaId(null);
-    setCallStart(null);
+    setCall(null);
     setTypingIn(null);
   }, [epoch, openingId]);
 
@@ -380,9 +382,8 @@ export function ChatScreen({ seat }: { seat: number }) {
               onTool={setTool}
               extraOtp={extraOtp}
               extraHits={extraHits}
-              callStart={callStart}
-              onCall={setCallStart}
-              onHangUp={() => setCallStart(null)}
+              call={call}
+              onCall={(tick) => setCall({ startTick: tick, ringTicks: RING_TICKS })}
             />
           </div>
         </aside>
@@ -390,6 +391,21 @@ export function ChatScreen({ seat }: { seat: number }) {
 
       <Ticker />
       <EventFlash />
+
+      {/*
+        Разговор — модалкой по центру всего экрана, а не внутри узкой панели
+        дока: на крупном плане должно быть видно лицо жертвы, таймер и
+        осциллограмму, а не мелкую колонку справа.
+      */}
+      {call && (
+        <CallOverlay
+          call={call}
+          thread={selected}
+          persona={persona}
+          seat={seat}
+          onHangUp={() => setCall(null)}
+        />
+      )}
     </div>
   );
 }

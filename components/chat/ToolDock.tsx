@@ -4,6 +4,7 @@ import { KeyRound, Link2, Mic, Video } from "lucide-react";
 import type { ChatDesk, OtpCode } from "@/lib/fixtures/chatdesk";
 import type { Thread } from "@/lib/fixtures/threads";
 import { cx } from "@/components/shared/ui";
+import type { Call } from "./CallOverlay";
 import { VoicePanel } from "./VoicePanel";
 import { DeepfakePanel } from "./DeepfakePanel";
 import { LinkPanel } from "./LinkPanel";
@@ -32,9 +33,8 @@ export function ToolDock({
   onTool,
   extraOtp,
   extraHits,
-  callStart,
+  call,
   onCall,
-  onHangUp,
 }: {
   desk: ChatDesk;
   thread: Thread;
@@ -46,11 +46,11 @@ export function ToolDock({
   extraHits: number;
   /**
    * Разговор живёт выше дока: иначе переключение вкладки размонтирует
-   * панель голоса и звонок оборвётся сам собой.
+   * панель голоса и звонок оборвётся сам собой. Там же он и рисуется —
+   * модалкой по центру экрана, а не внутри этой панели.
    */
-  callStart: number | null;
+  call: Call | null;
   onCall: (tick: number) => void;
-  onHangUp: () => void;
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden border-t border-zinc-800">
@@ -74,13 +74,7 @@ export function ToolDock({
 
       <div className="min-h-0 flex-1 overflow-hidden">
         {tool === "voice" && (
-          <VoicePanel
-            thread={thread}
-            seat={desk.seat}
-            callStart={callStart}
-            onCall={onCall}
-            onHangUp={onHangUp}
-          />
+          <VoicePanel thread={thread} seat={desk.seat} call={call} onCall={onCall} />
         )}
         {tool === "video" && <DeepfakePanel thread={thread} seat={desk.seat} />}
         {tool === "link" && <LinkPanel link={desk.link} extraHits={extraHits} />}

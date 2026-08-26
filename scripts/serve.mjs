@@ -123,15 +123,25 @@ async function publish(req, res) {
     return;
   }
 
+  const isScene = envelope.msg?.t === "scene";
+
   // Ctrl+Alt+R: сброс дубля. Журнал чистим здесь же, иначе экран, обновлённый
   // после сброса, доиграет отменённую переписку и дубли не склеятся.
-  if (envelope.msg?.t === "scene" && envelope.msg.kind === "reset") {
-    journal.length = 0;
-  }
+  if (isScene && envelope.msg.kind === "reset") journal.length = 0;
 
   envelope.seq = ++seq;
-  journal.push(envelope);
-  if (journal.length > JOURNAL_LIMIT) journal.splice(0, journal.length - JOURNAL_LIMIT);
+
+  /*
+    В журнал идёт только переписка. Команды режиссёра — живые, одноразовые:
+    если их запоминать, то машина, включённая посреди смены, при подключении
+    заново проиграет всю историю — сама поднимет трубку по старому Ctrl+Alt+1,
+    начислит вчерашние депозиты и забанит личину. Догонять после F5 нужно
+    диалог, а не пульт.
+  */
+  if (!isScene) {
+    journal.push(envelope);
+    if (journal.length > JOURNAL_LIMIT) journal.splice(0, journal.length - JOURNAL_LIMIT);
+  }
 
   for (const client of clients) {
     // Отправителю тоже: его собственное эхо — подтверждение доставки
@@ -187,10 +197,21 @@ createServer(async (req, res) => {
     return;
   }
 
+  const ext = extname(file);
+
+  /*
+    HTML не кешируем, всё остальное — кешируем надолго.
+
+    Имена файлов в _next/static содержат хеш содержимого: после пересборки
+    получается новое имя, поэтому старое можно держать в кеше сколько угодно.
+    А вот HTML имя не меняет — и если закешировать его, то экран, обновлённый
+    после пересборки, потянет из кеша вчерашнюю страницу со ссылками на
+    несуществующие чанки. На площадке это выглядит как «F5 показал старое».
+  */
   res.writeHead(path === "/404.html" || !file.endsWith("404.html") ? 200 : 404, {
-    "content-type": TYPES[extname(file)] ?? "application/octet-stream",
-    // Экраны висят всю смену: пусть браузер не дёргает файлы заново
-    "cache-control": "public, max-age=3600",
+    "content-type": TYPES[ext] ?? "application/octet-stream",
+    "cache-control":
+      ext === ".html" ? "no-cache" : "public, max-age=31536000, immutable",
   });
   createReadStream(file).pipe(res);
 }).listen(PORT, () => {
