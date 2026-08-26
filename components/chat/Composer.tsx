@@ -206,7 +206,7 @@ export function Composer({
             autoFocus
             spellCheck={false}
             autoComplete="off"
-            placeholder="Не переживайте, всё оформлено официально"
+            placeholder="Введите сообщение"
             className="flex-1 select-text bg-transparent text-[12.5px] text-zinc-200 placeholder:text-zinc-600"
           />
         )}
