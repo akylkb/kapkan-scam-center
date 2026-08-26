@@ -78,7 +78,7 @@ export function ChatThread({
         </span>
 
         {/* Степпер воронки — по нему видно, насколько клиент «дожат» */}
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-1">
+        {/* <div className="flex min-w-0 flex-1 items-center justify-center gap-1">
           {STAGES.map((s, i) => (
             <span key={s} className="flex items-center gap-1">
               <span
@@ -100,13 +100,13 @@ export function ChatThread({
               )}
             </span>
           ))}
-        </div>
+        </div> */}
 
-        <div className="flex shrink-0 gap-1">
+        {/* <div className="flex shrink-0 gap-1">
           <HeadBtn icon={Phone} label="Звонок" onClick={() => onTool("voice")} />
           <HeadBtn icon={Video} label="Видео" onClick={() => onTool("video")} />
           <HeadBtn icon={Link2} label="Ссылка" onClick={() => onTool("link")} />
-        </div>
+        </div> */}
       </header>
 
       {/*
