@@ -11,6 +11,7 @@ import {
   Volume2,
   VolumeX,
   Waves,
+  Check
 } from "lucide-react";
 import { useTick } from "@/lib/scene/SceneProvider";
 import { drift } from "@/components/shared/LiveNumber";
@@ -19,6 +20,7 @@ import { mmss } from "@/lib/format";
 import { VOICE_PRESETS } from "@/lib/fixtures/pools";
 import type { Thread } from "@/lib/fixtures/threads";
 import type { Persona } from "@/lib/fixtures/personas";
+import { FlashCard } from "@/components/shared/EventFlash";
 import { Chip, Meter, cx } from "@/components/shared/ui";
 
 /**
@@ -41,6 +43,9 @@ export const RING_TICKS = 20;
 
 /** Полос в осциллограмме: столько влезает в модалку без «частокола» */
 const BARS = 56;
+
+/** Сколько тиков висит плашка «ОБРАБОТАН» — те же 4 секунды, что у EventFlash */
+const HANDLED_TICKS = 16;
 
 export function CallOverlay({
   call,
@@ -67,6 +72,8 @@ export function CallOverlay({
   const [muted, setMuted] = useState(false);
   const [transferred, setTransferred] = useState(false);
   const [volume, setVolume] = useState(72);
+  /** Тик, на котором нажали «Обработан». null — плашку ещё не показывали */
+  const [handledAt, setHandledAt] = useState<number | null>(null);
 
   // Новый звонок начинается с чистого пульта: иначе следующий дубль
   // откроется с включённым удержанием от предыдущего
@@ -75,6 +82,7 @@ export function CallOverlay({
     setMuted(false);
     setTransferred(false);
     setVolume(72);
+    setHandledAt(null);
   }, [call.startTick]);
 
   const preset =
@@ -85,6 +93,14 @@ export function CallOverlay({
 
   // Уровни сигнала — функция от тика, а не Math.random(). Своя дорожка гаснет
   // при выключенном микрофоне, чужая — на удержании
+  // Плашка гаснет по часам сцены, а не по setTimeout: в стоп-кадре
+  // (Ctrl+Alt+0) она замирает вместе с экраном, и дубли совпадают
+  const handled = handledAt !== null && tick - handledAt < HANDLED_TICKS;
+  // Обработанный звонок больше не считает время: таймер сброшен на «··:··»
+  // до конца этого разговора. Возвращать его нельзя — он показал бы не ноль,
+  // а всё, что натикало на удержании, и «сброс» в кадре развалился бы
+  const closed = handledAt !== null;
+
   const live = !ringing && !hold;
   const outLevel = live && !muted ? drift(62, tick, 26, `out-${seat}-${thread.id}`) : 0;
   const inLevel = live ? drift(58, tick, 30, `in-${seat}-${thread.id}`) : 0;
@@ -131,16 +147,16 @@ export function CallOverlay({
               {thread.name}
             </p>
             <p className="truncate font-mono text-[10px] tracking-[0.08em] text-zinc-500">
-              {thread.phone} · {thread.city} · звоним от «{persona.name}»
+              {thread.phone} · {thread.city}»
             </p>
           </div>
           <span
             className={cx(
               "tnum shrink-0 font-mono text-[34px] leading-none font-semibold",
-              ringing ? "text-zinc-600" : "text-cyan-300",
+              ringing || closed ? "text-zinc-600" : "text-cyan-300",
             )}
           >
-            {ringing ? "··:··" : mmss(seconds)}
+            {ringing || closed ? "··:··" : mmss(seconds)}
           </span>
         </div>
 
@@ -241,7 +257,7 @@ export function CallOverlay({
         </p>
 
         {/* Пульт разговора */}
-        <div className="grid grid-cols-4 gap-1.5 border-t border-zinc-800 bg-zinc-900/40 p-2.5">
+        <div className="grid grid-cols-5 gap-1.5 border-t border-zinc-800 bg-zinc-900/40 p-2.5">
           <CallBtn
             icon={hold ? Play : Pause}
             label={hold ? "Снять" : "Удерж."}
@@ -263,6 +279,20 @@ export function CallOverlay({
             disabled={ringing}
             onClick={() => setMuted((v) => !v)}
           />
+
+          <CallBtn
+            icon={Check}
+            label="Обработан"
+            active={handled}
+            disabled={false}
+            // Звонок закрыт: вспышка, таймер на «··:··» и линия на удержании.
+            // Снять с удержания актёр по игре может, таймер — нет
+            onClick={() => {
+              setHandledAt(tick);
+              setHold(true);
+            }}
+          />
+
           <button
             onClick={onHangUp}
             className="flex flex-col items-center justify-center gap-1 rounded-[4px] border border-rose-800/60 bg-rose-950/50 py-2 text-rose-300 transition-colors hover:bg-rose-900/50"
@@ -272,6 +302,17 @@ export function CallOverlay({
           </button>
         </div>
       </section>
+
+      {/* Подтверждение действия актёра — тем же кадром, что и события
+          режиссёра. Ключ по тику: повторное нажатие перезапускает вспышку */}
+      {handled && (
+        <FlashCard
+          key={handledAt ?? 0}
+          tone="done"
+          title="ОБРАБОТАН"
+          sub={`звонок закрыт · ${thread.id}`}
+        />
+      )}
     </div>
   );
 }

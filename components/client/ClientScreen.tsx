@@ -13,6 +13,7 @@ import {
 import { BRAND } from "@/lib/brand";
 import { Rng } from "@/lib/prng";
 import { INSTRUMENTS } from "@/lib/fixtures/pools";
+import { ASAN_NAME } from "@/lib/fixtures/cast";
 import { makePositions } from "@/lib/fixtures/market";
 import { signedPct, usd, usdCents } from "@/lib/format";
 import { DriftNumber } from "@/components/shared/LiveNumber";
@@ -102,11 +103,14 @@ export function ClientScreen() {
             <BadgeCheck className="h-3 w-3" />
             GOLD ACCOUNT
           </span>
+          {/* Владелец кабинета — сценарный Асан: этот же экран супервайзер
+              смотрит через RAT в /admin, а его «прибыль» выбивают в /chat.
+              Имя берём из фикстуры, чтобы три экрана не разъехались. */}
           <span className="flex items-center gap-2 text-[12.5px] text-zinc-300">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 font-mono text-[10px]">
-              KB
+              АА
             </span>
-            Klaus Brandt
+            {ASAN_NAME}
             <ChevronDown className="h-3 w-3 text-zinc-600" />
           </span>
         </div>

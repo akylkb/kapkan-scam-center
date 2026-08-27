@@ -10,7 +10,7 @@ import {
 } from "./pools";
 import { makePersonas, type Persona } from "./personas";
 import { makeThreads, type Scheme, type Thread } from "./threads";
-import { makeAzharThread } from "./cast";
+import { makeAsanThread, makeAzharThread } from "./cast";
 
 /** Событие в логе фишинговой ссылки */
 export type LinkEvent = {
@@ -173,10 +173,11 @@ export function buildChatDesk(seat: number): ChatDesk {
 
   // 42 диалога — список гарантированно уходит за нижний край.
   // Наполовину пустая колонка в кадре читается как макет.
-  // Сценарная Ажар стоит первой строкой на всех местах: её диалог играют
-  // по имени, и он должен открываться в один клик с любой машины.
+  // Сценарные Ажар и Асан стоят первыми строками на всех местах: их диалоги
+  // играют по имени, и они должны открываться в один клик с любой машины.
   const threads = [
     makeAzharThread(personas),
+    makeAsanThread(personas),
     ...makeThreads(seatRng(seat, "threads"), personas, 42, bias),
   ];
 

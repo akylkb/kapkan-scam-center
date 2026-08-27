@@ -16,6 +16,7 @@ import { BRAND } from "@/lib/brand";
 import { Rng } from "@/lib/prng";
 import { AGENT_STATE_META, makeAgents, type Agent } from "@/lib/fixtures/agents";
 import { INSTRUMENTS, pickCountry, pickName } from "@/lib/fixtures/pools";
+import { ASAN_SESSION, ASAN_WITHDRAWAL } from "@/lib/fixtures/cast";
 import { mmss, usd } from "@/lib/format";
 import { SceneClock } from "@/components/shared/SceneClock";
 import { Ticker } from "@/components/shared/Ticker";
@@ -39,7 +40,7 @@ export function AdminScreen() {
 
   const withdrawals = useMemo(() => {
     const rng = new Rng("admin-withdrawals");
-    return Array.from({ length: 11 }, (_, i) => {
+    const rows = Array.from({ length: 11 }, (_, i) => {
       const c = pickCountry(rng);
       return {
         id: `WD-${rng.int(10000, 99999)}`,
@@ -56,12 +57,15 @@ export function AdminScreen() {
         i,
       };
     }).sort((a, b) => b.amount - a.amount);
+    // Сценарный Асан — первой строкой, поверх сортировки по сумме: его заявку
+    // в кадре открывают и отклоняют вручную, искать её в списке некогда
+    return [{ ...ASAN_WITHDRAWAL, i: -1 }, ...rows];
   }, []);
 
   // Кто из операторов прямо сейчас видит экран своей жертвы
   const sessions = useMemo(() => {
     const rng = new Rng("admin-sessions");
-    return Array.from({ length: 9 }, (_, i) => {
+    const rows = Array.from({ length: 9 }, (_, i) => {
       const c = pickCountry(rng);
       return {
         id: `RV-${rng.int(1000, 9999)}`,
@@ -76,6 +80,9 @@ export function AdminScreen() {
         duration: rng.int(40, 2600) + i,
       };
     });
+    // Первая сессия — машина Асана: это ровно тот экран, который показан
+    // на /client, и супервайзер смотрит его прямо сейчас
+    return [ASAN_SESSION, ...rows];
   }, []);
 
   const quotes = useMemo(() => {

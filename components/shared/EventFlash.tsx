@@ -18,14 +18,29 @@ import {
 import { usd } from "@/lib/format";
 import { cx } from "./ui";
 
+/**
+ * Тон плашки. «done» — не событие режиссёра, а подтверждение действия
+ * актёра в кадре (кнопка «Обработан» на пульте разговора).
+ */
+export type FlashTone =
+  | "deposit"
+  | "whale"
+  | "lost"
+  | "withdraw"
+  | "payout"
+  | "burn"
+  | "link"
+  | "ban"
+  | "done";
+
 type Flash = {
   key: number;
-  tone: "deposit" | "whale" | "lost" | "withdraw" | "payout" | "burn" | "link" | "ban";
+  tone: FlashTone;
   title: string;
   sub: string;
 };
 
-const TONE: Record<Flash["tone"], { box: string; title: string; glow: string }> = {
+const TONE: Record<FlashTone, { box: string; title: string; glow: string }> = {
   deposit: {
     box: "border-emerald-500/60 bg-emerald-950/85",
     title: "text-emerald-300",
@@ -66,7 +81,54 @@ const TONE: Record<Flash["tone"], { box: string; title: string; glow: string }> 
     title: "text-rose-300",
     glow: "shadow-[0_0_60px_rgba(244,63,94,0.3)]",
   },
+  done: {
+    box: "border-emerald-500/60 bg-emerald-950/85",
+    title: "text-emerald-300",
+    glow: "shadow-[0_0_70px_rgba(16,185,129,0.4)]",
+  },
 };
+
+/**
+ * Сама плашка. Вынесена из EventFlash, потому что её показывают не только
+ * события режиссёра: пульт разговора подтверждает ею нажатие «Обработан».
+ * Кто и когда её гасит — дело вызывающего; здесь только вид.
+ *
+ * Ключ (`key`) на элементе перезапускает анимацию: без него повторная
+ * вспышка подряд не проигрывается, а просто висит на экране.
+ */
+export function FlashCard({
+  tone,
+  title,
+  sub,
+}: {
+  tone: FlashTone;
+  title: string;
+  sub: string;
+}) {
+  const t = TONE[tone];
+
+  return (
+    <div
+      className={cx(
+        "animate-flash-in pointer-events-none absolute top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 rounded-[6px] border-2 px-10 py-6 backdrop-blur-[2px]",
+        t.box,
+        t.glow,
+      )}
+    >
+      <p
+        className={cx(
+          "text-center font-mono text-[46px] leading-none font-bold tracking-tight",
+          t.title,
+        )}
+      >
+        {title}
+      </p>
+      <p className="mt-2 text-center font-mono text-[14px] tracking-[0.14em] text-zinc-300 uppercase">
+        {sub}
+      </p>
+    </div>
+  );
+}
 
 /**
  * Всплывающая плашка на событие режиссёра.
@@ -137,56 +199,34 @@ export function EventFlash() {
   }, [dep, whale, lost, wd, burn, payout, link, ban]);
 
   if (!flash) return null;
-  const tone = TONE[flash.tone];
 
-  return (
-    <div
-      key={flash.key}
-      className={cx(
-        "animate-flash-in pointer-events-none absolute top-1/2 left-1/2 z-40 -translate-x-1/2 -translate-y-1/2 rounded-[6px] border-2 px-10 py-6 backdrop-blur-[2px]",
-        tone.box,
-        tone.glow,
-      )}
-    >
-      <p
-        className={cx(
-          "text-center font-mono text-[46px] leading-none font-bold tracking-tight",
-          tone.title,
-        )}
-      >
-        {flash.title}
-      </p>
-      <p className="mt-2 text-center font-mono text-[14px] tracking-[0.14em] text-zinc-300 uppercase">
-        {flash.sub}
-      </p>
-    </div>
-  );
+  return <FlashCard key={flash.key} tone={flash.tone} title={flash.title} sub={flash.sub} />;
 }
 
 function copyFor(
-  tone: Flash["tone"],
+  tone: FlashTone,
   amount: number,
   name: string,
   flag: string,
 ): { title: string; sub: string } {
   switch (tone) {
     case "whale":
-      return { title: `+${usd(amount)}`, sub: `КИТ · ${flag} ${name}` };
+      return { title: `+${usd(amount)}`, sub: `КИТ` };
     case "lost":
-      return { title: "КЛИЕНТ СОРВАЛСЯ", sub: `${flag} ${name} · звонок прерван` };
+      return { title: "КЛИЕНТ СОРВАЛСЯ", sub: `звонок прерван` };
     case "withdraw":
-      return { title: `ВЫВОД ${usd(amount)}`, sub: `${flag} ${name} · заявка заблокирована` };
+      return { title: `ВЫВОД ${usd(amount)}`, sub: `заявка заблокирована` };
     case "burn":
       // Здесь lastName — это кличка дропа, а не имя жертвы
-      return { title: "ДРОП СГОРЕЛ", sub: `«${name}» · карта заблокирована · ${usd(amount)} завис` };
+      return { title: "ДРОП СГОРЕЛ", sub: `карта заблокирована · ${usd(amount)} завис` };
     case "payout":
-      return { title: `ЗАЛИВ ${usd(amount)}`, sub: `«${name}» · цепочка закрыта · нал в кассе` };
+      return { title: `ЗАЛИВ ${usd(amount)}`, sub: `цепочка закрыта · нал в кассе` };
     case "link":
-      return { title: `СПИСАНО ${usd(amount)}`, sub: `${flag} ${name} · ссылка открыта · карта введена` };
+      return { title: `СПИСАНО ${usd(amount)}`, sub: `ссылка открыта · карта введена` };
     case "ban":
       // Здесь lastName — хэндл личины, а не имя жертвы
-      return { title: "АККАУНТ ЗАБАНЕН", sub: `${name} · переписка оборвана` };
+      return { title: "АККАУНТ ЗАБАНЕН", sub: `переписка оборвана` };
     default:
-      return { title: `+${usd(amount)}`, sub: `депозит · ${flag} ${name}` };
+      return { title: `+${usd(amount)}`, sub: `депозит` };
   }
 }

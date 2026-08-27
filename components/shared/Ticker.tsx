@@ -1,7 +1,9 @@
 "use client";
 
+import { ASAN_ASK, ASAN_SHORT, ASAN_WITHDRAW } from "@/lib/fixtures/cast";
 import { selectFeed, useSceneValue } from "@/lib/scene/SceneProvider";
 import type { FeedItem } from "@/lib/scene/events";
+import { usd } from "@/lib/format";
 import { cx } from "./ui";
 
 const KIND_STYLE: Record<FeedItem["kind"], string> = {
@@ -82,4 +84,18 @@ const PLACEHOLDER: FeedItem[] = [
   { id: -10, kind: "burn", at: 0, text: "ДРОП «Сивый» · КАРТА ЗАБЛОКИРОВАНА · залив $2 800 завис" },
   { id: -11, kind: "link", at: 0, text: "🇰🇿 Айгуль С. · переход по ссылке · списано $340" },
   { id: -12, kind: "ban", at: 0, text: "@marina_84 · аккаунт заблокирован · 6 диалогов потеряно" },
+  // Сценарный Асан: на стене он живёт только здесь — других поимённых
+  // списков на общем плане нет. Суммы те же, что в его карточке в CRM
+  {
+    id: -13,
+    kind: "withdraw",
+    at: 0,
+    text: `${ASAN_SHORT} · запрос вывода ${usd(ASAN_WITHDRAW)} · отклонён`,
+  },
+  {
+    id: -14,
+    kind: "deposit",
+    at: 0,
+    text: `${ASAN_SHORT} · довнос ${usd(ASAN_ASK)} · «комиссия за вывод»`,
+  },
 ];
