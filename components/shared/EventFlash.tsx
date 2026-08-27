@@ -222,7 +222,7 @@ function copyFor(
     case "payout":
       return { title: `ЗАЛИВ ${usd(amount)}`, sub: `цепочка закрыта · нал в кассе` };
     case "link":
-      return { title: `СПИСАНО ${usd(amount)}`, sub: `ссылка открыта · карта введена` };
+      return { title: `ДЕНЬГИ СПИСАНЫ`, sub: `задание выполнено` };
     case "ban":
       // Здесь lastName — хэндл личины, а не имя жертвы
       return { title: "АККАУНТ ЗАБАНЕН", sub: `переписка оборвана` };
