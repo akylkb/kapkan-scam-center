@@ -309,7 +309,7 @@ export function CallOverlay({
         <FlashCard
           key={handledAt ?? 0}
           tone="done"
-          title="ОБРАБОТАН"
+          title={`${thread.name.toUpperCase()} ОБРАБОТАН`}
           sub={`сделка закрыта · ${thread.id}`}
         />
       )}
