@@ -52,9 +52,9 @@ export function VictimCard({ thread, persona }: { thread: Thread; persona: Perso
             <h2 className="flex items-center gap-1.5 text-[15px] leading-tight font-semibold text-zinc-100">
               <span className="text-[13px]">{thread.country.flag}</span>
               <span className="truncate">{thread.name}</span>
-              <span className="shrink-0 font-mono text-[10px] font-normal text-zinc-600">
+              {/* <span className="shrink-0 font-mono text-[10px] font-normal text-zinc-600">
                 {thread.age}
-              </span>
+              </span> */}
             </h2>
             <p className="mt-0.5 font-mono text-[9.5px] tracking-[0.1em] text-zinc-600">
               {thread.id} · {thread.city}, {thread.country.ru} · {thread.phone}

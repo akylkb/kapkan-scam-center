@@ -474,7 +474,7 @@ export const KUNDUZ_PAYOUT_ID = "PO-38778";
 export const KUNDUZ_NAME = "Кундуз Токтосунова";
 /** Инициалы для лент и очередей: «🇰🇬 Кундуз Т.» */
 export const KUNDUZ_SHORT = `${KG.flag} Кундуз Т.`;
-const KUNDUZ_CITY = "Каракол";
+const KUNDUZ_CITY = "Бишкек";
 const KUNDUZ_PHONE = maskPhone(KG.cc, `${KG.dial}310562`);
 
 /** Оператор, который её ведёт. Не тот же, что у Асана: в лидерборде смены
