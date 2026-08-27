@@ -63,6 +63,12 @@ export function ChatScreen({ seat }: { seat: number }) {
 
   const [overrides, setOverrides] = useState<Record<string, Override>>({});
   const [injected, setInjected] = useState<Record<string, Message[]>>({});
+  /**
+   * Реплики, стёртые по игре. Держим id, а не правим ленту: удалить можно и
+   * фикстурную реплику, а сами фикстуры не мутируются — иначе Ctrl+Alt+R не
+   * вернул бы исходную переписку.
+   */
+  const [removed, setRemoved] = useState<ReadonlySet<string>>(() => new Set());
   const [extraOtp, setExtraOtp] = useState<OtpCode[]>([]);
   const [extraHits, setExtraHits] = useState(0);
   const [bannedPersonaId, setBannedPersonaId] = useState<string | null>(null);
@@ -88,15 +94,20 @@ export function ChatScreen({ seat }: { seat: number }) {
       desk.threads.map((t) => {
         const o = overrides[t.id];
         const inj = injected[t.id];
-        if (!o && !inj) return t;
+        const merged = inj ? [...inj, ...t.messages] : t.messages;
+        // Стёртое отсекаем здесь же, а не в ленте: иначе предпросмотр в списке
+        // слева продолжал бы показывать удалённую реплику
+        const messages =
+          removed.size > 0 ? merged.filter((m) => !removed.has(m.id)) : merged;
+        if (!o && messages === t.messages) return t;
         return {
           ...t,
           status: o?.status ?? t.status,
           stage: o?.stage ?? t.stage,
-          messages: inj ? [...inj, ...t.messages] : t.messages,
+          messages,
         };
       }),
-    [desk.threads, overrides, injected],
+    [desk.threads, overrides, injected, removed],
   );
 
   const visible = useMemo(() => filterThreads(threads, queue), [threads, queue]);
@@ -145,6 +156,25 @@ export function ChatScreen({ seat }: { seat: number }) {
     live({ t: "typing", from: "operator", threadId: selected.id });
   }, [selected.id, live]);
 
+  /** Убрать реплику из ленты. Идемпотентно: эхо и повторный клик безвредны */
+  const forget = useCallback((msgId: string) => {
+    setRemoved((prev) => (prev.has(msgId) ? prev : new Set(prev).add(msgId)));
+  }, []);
+
+  /**
+   * Чатер стёр реплику — свою, жертвы или служебную.
+   *
+   * Гасим сразу, не дожидаясь эха: в кадре реплика должна исчезать в момент
+   * нажатия, как и появляться. Телефон жертвы уберёт её по сообщению из шины.
+   */
+  const handleDelete = useCallback(
+    (msgId: string) => {
+      live({ t: "unsay", threadId: selected.id, msgId });
+      forget(msgId);
+    },
+    [selected.id, live, forget],
+  );
+
   // Открытый диалог объявляется в шину: телефон жертвы следует за чатером,
   // и режиссёру не нужно синхронизировать экраны вручную
   useEffect(() => {
@@ -181,6 +211,12 @@ export function ChatScreen({ seat }: { seat: number }) {
         // Входящая реплика доставлена по определению: мы её уже держим в руках
         delivered: true,
       });
+      return;
+    }
+
+    if (msg.t === "unsay") {
+      // Своё эхо тоже проходит сюда — Set это переживает без последствий
+      forget(msg.msgId);
       return;
     }
 
@@ -334,6 +370,7 @@ export function ChatScreen({ seat }: { seat: number }) {
     setTool("voice");
     setOverrides({});
     setInjected({});
+    setRemoved(new Set());
     setExtraOtp([]);
     setExtraHits(0);
     setBannedPersonaId(null);
@@ -369,6 +406,7 @@ export function ChatScreen({ seat }: { seat: number }) {
           onTool={setTool}
           onSend={handleSend}
           onTyping={handleTyping}
+          onDelete={handleDelete}
         />
 
         {/* Правая колонка: карточка жертвы + док инструментов */}

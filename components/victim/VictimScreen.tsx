@@ -67,6 +67,8 @@ export function VictimScreen({ seat }: { seat: number }) {
   // Что чатер объявил открытым. null — он ещё не запущен, держим стартовый
   const [focus, setFocus] = useState<{ threadId: string; personaId: string } | null>(null);
   const [injected, setInjected] = useState<Record<string, Message[]>>({});
+  /** Реплики, стёртые чатером: у жертвы они исчезают тем же движением */
+  const [removed, setRemoved] = useState<ReadonlySet<string>>(() => new Set());
   const [typing, setTyping] = useState(false);
   const [callFrom, setCallFrom] = useState<string | null>(null);
   /** Реплики, по ссылкам в которых жертва уже перешла */
@@ -100,8 +102,10 @@ export function VictimScreen({ seat }: { seat: number }) {
    */
   const messages = useMemo(() => {
     const own = injected[thread.id] ?? [];
-    return [...own, ...thread.messages].filter((m) => m.from !== "system");
-  }, [injected, thread]);
+    return [...own, ...thread.messages].filter(
+      (m) => m.from !== "system" && !removed.has(m.id),
+    );
+  }, [injected, thread, removed]);
 
   const push = useCallback((threadId: string, msg: Message) => {
     setInjected((prev) => {
@@ -178,6 +182,13 @@ export function VictimScreen({ seat }: { seat: number }) {
       return;
     }
 
+    // Чатер стёр реплику — снимаем и здесь. Удаление приходит по той же
+    // комнате, что и переписка, поэтому доходит и до соседней машины
+    if (msg.t === "unsay") {
+      setRemoved((prev) => (prev.has(msg.msgId) ? prev : new Set(prev).add(msg.msgId)));
+      return;
+    }
+
     if (msg.t === "typing" && msg.from === "operator") {
       setTyping(true);
       if (typingTimer.current) clearTimeout(typingTimer.current);
@@ -206,6 +217,7 @@ export function VictimScreen({ seat }: { seat: number }) {
     if (epoch === 0) return;
     setFocus(null);
     setInjected({});
+    setRemoved(new Set());
     setTyping(false);
     setCallFrom(null);
     setVisited(new Set());

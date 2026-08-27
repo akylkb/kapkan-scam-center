@@ -171,7 +171,7 @@ export class SceneStore {
         });
         this.pushFeed({
           kind: "call",
-          text: `Входящий · ${name} · ${country.ru}`,
+          text: `Входящий · ${country.ru}`,
         });
         break;
 
@@ -187,7 +187,7 @@ export class SceneStore {
         this.pushFeed({
           kind: "deposit",
           amount,
-          text: `${country.flag} ${name} · депозит ${usd(amount)}`,
+          text: `депозит ${usd(amount)}`,
         });
         break;
       }
@@ -204,7 +204,7 @@ export class SceneStore {
         this.pushFeed({
           kind: "deposit",
           amount,
-          text: `КИТ · ${country.flag} ${name} · ${usd(amount)}`,
+          text: `КИТ · ${usd(amount)}`,
         });
         break;
       }
@@ -218,7 +218,7 @@ export class SceneStore {
         });
         this.pushFeed({
           kind: "lost",
-          text: `${country.flag} ${name} · СОРВАЛСЯ · звонок прерван`,
+          text: `СОРВАЛСЯ · звонок прерван`,
         });
         break;
 
@@ -233,7 +233,7 @@ export class SceneStore {
         this.pushFeed({
           kind: "withdraw",
           amount,
-          text: `${country.flag} ${name} · заявка на вывод ${usd(amount)} · ЗАБЛОКИРОВАНО`,
+          text: `заявка на вывод ${usd(amount)} · ЗАБЛОКИРОВАНО`,
         });
         break;
       }
@@ -286,7 +286,7 @@ export class SceneStore {
         this.pushFeed({
           kind: "link",
           amount,
-          text: `${country.flag} ${name} · ссылка открыта · карта введена · списано ${usd(amount)}`,
+          text: `ссылка открыта · карта введена · списано ${usd(amount)}`,
         });
         break;
       }
@@ -360,7 +360,7 @@ export class SceneStore {
         this.pushFeed({
           kind,
           amount,
-          text: `${country.flag} ${masked} · депозит ${usd(amount)} · ${agent}`,
+          text: `депозит ${usd(amount)} · ${agent}`,
         });
         break;
       }
@@ -373,26 +373,26 @@ export class SceneStore {
       case "join":
         this.pushFeed({
           kind,
-          text: `${country.flag} ${masked} · новая регистрация · источник ADS-${rng.int(10, 99)}`,
+          text: `новая регистрация · источник ADS-${rng.int(10, 99)}`,
         });
         break;
       case "upgrade":
         this.pushFeed({
           kind,
-          text: `${country.flag} ${masked} · апгрейд до ${rng.pick(["SILVER", "GOLD", "PLATINUM"])}`,
+          text: `апгрейд до ${rng.pick(["SILVER", "GOLD", "PLATINUM"])}`,
         });
         break;
       case "lost":
         this.pushFeed({
           kind,
-          text: `${country.flag} ${masked} · отказ · передан в RECOVERY`,
+          text: `отказ · передан в RECOVERY`,
         });
         break;
       case "withdraw":
         this.pushFeed({
           kind,
           amount: rng.money(1_000, 18_000),
-          text: `${country.flag} ${masked} · запрос вывода · отклонён`,
+          text: ` запрос вывода · отклонён`,
         });
         break;
       case "link": {
@@ -401,7 +401,7 @@ export class SceneStore {
         this.pushFeed({
           kind,
           amount,
-          text: `${country.flag} ${masked} · переход по ссылке · списано ${usd(amount)}`,
+          text: `переход по ссылке · списано ${usd(amount)}`,
         });
         break;
       }

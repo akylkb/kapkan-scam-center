@@ -27,6 +27,7 @@ export function ChatThread({
   onTool,
   onSend,
   onTyping,
+  onDelete,
 }: {
   /** Реплики лежат в thread.messages новыми вперёд: лента рисуется
       flex-col-reverse и сама упирается в нижний край */
@@ -40,6 +41,8 @@ export function ChatThread({
   onTool: (tool: ToolId) => void;
   onSend: (text: string, attach?: Attach) => void;
   onTyping: () => void;
+  /** Стереть реплику — она исчезает и здесь, и на телефоне жертвы */
+  onDelete: (msgId: string) => void;
 }) {
   const ch = CHANNEL_META[thread.channel];
   const status = THREAD_STATUS_META[thread.status];
@@ -144,7 +147,7 @@ export function ChatThread({
       */}
       <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto py-2">
         {thread.messages.map((m) => (
-          <MessageBubble key={m.id} msg={m} />
+          <MessageBubble key={m.id} msg={m} onDelete={() => onDelete(m.id)} />
         ))}
 
         {/* Начало переписки — чтобы лента не обрывалась в пустоту */}

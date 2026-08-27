@@ -32,7 +32,7 @@ const KG = COUNTRIES.find((c) => c.code === "KG")!;
 export const AZHAR_THREAD_ID = "TH-4777";
 export const AZHAR_DROP_ID = "DR-7777";
 
-const AZHAR_NAME = "Ажар Сыдыкова";
+const AZHAR_NAME = "Ажар Сеитова";
 const AZHAR_CITY = "Бишкек";
 const AZHAR_BANK = KG.banks[0];
 const AZHAR_PHONE = maskPhone(KG.cc, `${KG.dial}204831`);
@@ -139,7 +139,7 @@ export function makeAzharThread(personas: Persona[]): Thread {
     online: true,
     typing: false,
     hook: "«стабильный доход, 2 часа в день»",
-    note: "Разведена, сын 6 лет, полставки в аптеке. Деньги нужны сейчас — не торговаться, обещать выплату завтра. Карту уже отдала.",
+    note: "Разведена, есть ребенок. Деньги нужны сейчас — не торговаться, обещать выплату завтра. Карту уже отдала.",
     messages,
     events: EVENTS.map((e, i) => ({ ...e, id: `EV-${AZHAR_THREAD_ID}-${i}` })),
   };
