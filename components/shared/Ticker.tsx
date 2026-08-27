@@ -1,6 +1,12 @@
 "use client";
 
-import { ASAN_ASK, ASAN_SHORT, ASAN_WITHDRAW } from "@/lib/fixtures/cast";
+import {
+  ASAN_ASK,
+  ASAN_SHORT,
+  ASAN_WITHDRAW,
+  KUNDUZ_ASK,
+  KUNDUZ_SHORT,
+} from "@/lib/fixtures/cast";
 import { selectFeed, useSceneValue } from "@/lib/scene/SceneProvider";
 import type { FeedItem } from "@/lib/scene/events";
 import { usd } from "@/lib/format";
@@ -97,5 +103,11 @@ const PLACEHOLDER: FeedItem[] = [
     kind: "deposit",
     at: 0,
     text: `${ASAN_SHORT} · довнос ${usd(ASAN_ASK)} · «комиссия за вывод»`,
+  },
+  {
+    id: -15,
+    kind: "upgrade",
+    at: 0,
+    text: `${KUNDUZ_SHORT} · страховой взнос ${usd(KUNDUZ_ASK)} · дожим`,
   },
 ];

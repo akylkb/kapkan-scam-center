@@ -227,6 +227,6 @@ function copyFor(
       // Здесь lastName — хэндл личины, а не имя жертвы
       return { title: "АККАУНТ ЗАБАНЕН", sub: `переписка оборвана` };
     default:
-      return { title: `+${usd(amount)}`, sub: `депозит` };
+      return { title: `+60 000 сом`, sub: `Пополение ZIBANK` };
   }
 }

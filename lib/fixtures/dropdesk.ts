@@ -2,7 +2,7 @@ import { seatRng } from "@/lib/prng";
 import { DROP_POOLS } from "@/lib/brand";
 import { AGENT_ALIASES, AGENT_REAL, CASH_CITIES, COURIERS } from "./pools";
 import { makeDrops, loadPct, type Drop } from "./drops";
-import { ASAN_PAYOUT, AZHAR_DROP } from "./cast";
+import { ASAN_PAYOUT, AZHAR_DROP, KUNDUZ_PAYOUT } from "./cast";
 import { makePayouts, type Payout } from "./payouts";
 
 /** Точка снятия наличных на региональной карте */
@@ -69,7 +69,12 @@ export function buildDropDesk(seat: number): DropDesk {
   // экранов зритель должен узнать и жертву, и карту. Второй строкой по той же
   // причине, что и Ажар в реестре: на payouts[0] открывается цепочка отмыва.
   const generatedPayouts = makePayouts(seatRng(seat, "payouts"), drops, 22);
-  const payouts = [generatedPayouts[0], ASAN_PAYOUT, ...generatedPayouts.slice(1)];
+  const payouts = [
+    generatedPayouts[0],
+    ASAN_PAYOUT,
+    KUNDUZ_PAYOUT,
+    ...generatedPayouts.slice(1),
+  ];
 
   const cashRng = seatRng(seat, "cash");
   const points: CashPoint[] = CASH_CITIES.map(([lon, lat, city, code]) => {

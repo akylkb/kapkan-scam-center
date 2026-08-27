@@ -2,7 +2,7 @@ import { Rng, seatRng } from "@/lib/prng";
 import { DESKS } from "@/lib/brand";
 import { AGENT_ALIASES, AGENT_REAL } from "./pools";
 import { makeLeads, type Lead } from "./leads";
-import { makeAsanLead } from "./cast";
+import { makeAsanLead, makeKunduzLead } from "./cast";
 import { makeAgents, type Agent } from "./agents";
 
 export type Workspace = {
@@ -42,9 +42,9 @@ export function buildWorkspace(seat: number): Workspace {
     extension: `${1000 + seat * 7}`,
     // 140 строк — чтобы таблица гарантированно уходила за нижний край экрана.
     // Наполовину пустой список сразу читается в кадре как макет.
-    // Сценарный Асан — второй строкой, а не первой: экран открывается на
-    // leads[0], и первой он держал бы одну карточку на всех десяти машинах.
-    leads: withAsan(makeLeads(seatRng(seat, "leads"), 140)),
+    // Сценарные лиды — со второй строки, а не с первой: экран открывается
+    // на leads[0], и первыми они держали бы одну карточку на всех машинах.
+    leads: withCast(makeLeads(seatRng(seat, "leads"), 140)),
     floor: makeAgents(seatRng(seat, "floor"), 12),
     target: rng.pick([18_000, 20_000, 24_000, 30_000]),
     done: rng.money(4_000, 17_000),
@@ -52,9 +52,9 @@ export function buildWorkspace(seat: number): Workspace {
   };
 }
 
-/** Вставка сценарного лида второй строкой — см. комментарий в buildWorkspace */
-function withAsan(leads: Lead[]): Lead[] {
-  return [leads[0], makeAsanLead(), ...leads.slice(1)];
+/** Вставка сценарных лидов со второй строки — см. комментарий в buildWorkspace */
+function withCast(leads: Lead[]): Lead[] {
+  return [leads[0], makeAsanLead(), makeKunduzLead(), ...leads.slice(1)];
 }
 
 /** Очереди на левой панели — считаются из реальных статусов, а не выдуманы */

@@ -13,7 +13,7 @@ import {
 import { BRAND } from "@/lib/brand";
 import { Rng } from "@/lib/prng";
 import { INSTRUMENTS } from "@/lib/fixtures/pools";
-import { ASAN_NAME } from "@/lib/fixtures/cast";
+import { ASAN_NAME, KUNDUZ_BAIT, KUNDUZ_SHORT } from "@/lib/fixtures/cast";
 import { makePositions } from "@/lib/fixtures/market";
 import { signedPct, usd, usdCents } from "@/lib/format";
 import { DriftNumber } from "@/components/shared/LiveNumber";
@@ -347,6 +347,36 @@ export function ClientScreen() {
               <span className="font-mono text-[10.5px] text-zinc-600">Написать сообщение…</span>
             </div>
 
+            {/*
+              «Социальное доказательство» — обязательный блок таких кабинетов:
+              жертве показывают чужие успешные выводы, чтобы она не сомневалась
+              в своём. Первой строкой — сценарная Кундуз, и это самый злой стык
+              всего реквизита: здесь она «вывела деньги», а в CRM оператора
+              (/crm) на ней висят 38 400 и три отклонённые заявки.
+            */}
+            <p className="mt-4 mb-2 font-mono text-[9.5px] tracking-[0.14em] text-zinc-600 uppercase">
+              Выплаты клиентам
+            </p>
+            <div className="space-y-[3px]">
+              {PAYOUT_PROOF.map((p) => (
+                <div
+                  key={p.name}
+                  className="flex items-center gap-2 rounded-[3px] border border-zinc-800/70 bg-zinc-900/40 px-2 py-1.5"
+                >
+                  <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-emerald-400" />
+                  <span className="min-w-0 flex-1 truncate text-[11px] text-zinc-300">
+                    {p.name}
+                  </span>
+                  <span className="tnum shrink-0 font-mono text-[11px] text-emerald-400">
+                    {usd(p.amount)}
+                  </span>
+                  <span className="w-[52px] shrink-0 text-right font-mono text-[9.5px] text-zinc-600">
+                    {p.ago}
+                  </span>
+                </div>
+              ))}
+            </div>
+
             {/* Список котировок: без него нижняя треть панели пустует,
                 а в реальном кабинете брокера такой блок есть всегда */}
             <p className="mt-4 mb-2 font-mono text-[9.5px] tracking-[0.14em] text-zinc-600 uppercase">
@@ -406,6 +436,13 @@ export function ClientScreen() {
     </div>
   );
 }
+
+/** Чужие «успешные выводы» для правой панели — приманка, а не операции */
+const PAYOUT_PROOF = [
+  { name: KUNDUZ_SHORT, amount: KUNDUZ_BAIT, ago: "6 мин" },
+  { name: "🇰🇿 Ержан С.", amount: 5_800, ago: "24 мин" },
+  { name: "🇷🇺 Тамара Ж.", amount: 1_150, ago: "1 ч" },
+];
 
 function OrderField({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (

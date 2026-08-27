@@ -172,7 +172,10 @@ export const AZHAR_DROP: Drop = {
   phone: AZHAR_PHONE,
   // Завербована вчера, карта чистая: три дня мелкими, крупное пока не лить
   status: "warm",
-  limitDay: 5_000,
+  // 8 000, а не 5 000: на её карту стоят два сценарных залива (Асан 3 200 и
+  // Кундуз 1 800) поверх уже залитых 2 320 — в 5 000 это не умещалось,
+  // и реестр на крупном плане противоречил бы очереди
+  limitDay: 8_000,
   loadedToday: 2_320,
   holdMin: 40,
   feePct: 8,
@@ -451,4 +454,253 @@ export const ASAN_SESSION = {
   app: "браузер · терминал",
   control: true,
   duration: 1_284,
+} as const;
+
+/* ===========================================================================
+   КУНДУЗ ТОКТОСУНОВА — вторая сквозная жертва.
+
+   Асана ведут «инвестициями», её — звонком из «службы безопасности банка»:
+   две классические схемы рядом, чтобы в кадре было видно, что контора
+   работает не одним сценарием. Она же — та самая «клиентка, которая успешно
+   вывела деньги», которую показывают Асану в кабинете брокера: в CRM она
+   отдала конторе сбережения, а на его экране числится счастливым примером.
+   Этот стык двух экранов и есть самая говорящая деталь всей истории.
+=========================================================================== */
+
+export const KUNDUZ_LEAD_ID = "LD-49778";
+export const KUNDUZ_THREAD_ID = "TH-4781";
+export const KUNDUZ_PAYOUT_ID = "PO-38778";
+
+export const KUNDUZ_NAME = "Кундуз Токтосунова";
+/** Инициалы для лент и очередей: «🇰🇬 Кундуз Т.» */
+export const KUNDUZ_SHORT = `${KG.flag} Кундуз Т.`;
+const KUNDUZ_CITY = "Каракол";
+const KUNDUZ_PHONE = maskPhone(KG.cc, `${KG.dial}310562`);
+
+/** Оператор, который её ведёт. Не тот же, что у Асана: в лидерборде смены
+    и в очереди заливов должны стоять разные имена, иначе зал выглядит пустым */
+export const KUNDUZ_AGENT = AGENT_ALIASES[4];
+
+/** Сколько она уже отдала — цифра сходится в CRM, в чате и в админке */
+export const KUNDUZ_PAID = 38_400;
+/** Что из неё выбивают сейчас — «страховой взнос» за возврат */
+export const KUNDUZ_ASK = 6_800;
+/** Сумма, которой её показывают Асану в кабинете брокера как «успешный вывод» */
+export const KUNDUZ_BAIT = 2_400;
+
+/* --- /crm: карточка лида ------------------------------------------------- */
+
+const KUNDUZ_CALLS: readonly CallRecord[] = [
+  { id: "CL-KT-1", agoMin: 26, durationSec: 892, agent: KUNDUZ_AGENT, outcome: "думает", recorded: true },
+  { id: "CL-KT-2", agoMin: 180, durationSec: 1_640, agent: KUNDUZ_AGENT, outcome: "депозит получен", recorded: true },
+  { id: "CL-KT-3", agoMin: 1_460, durationSec: 2_240, agent: KUNDUZ_AGENT, outcome: "согласие на апгрейд", recorded: true },
+  { id: "CL-KT-4", agoMin: 2_880, durationSec: 1_180, agent: AGENT_ALIASES[7], outcome: "депозит получен", recorded: true },
+  { id: "CL-KT-5", agoMin: 5_760, durationSec: 316, agent: AGENT_ALIASES[7], outcome: "перезвонить", recorded: true },
+  { id: "CL-KT-6", agoMin: 8_640, durationSec: 74, agent: AGENT_ALIASES[7], outcome: "не отвечает", recorded: false },
+];
+
+const KUNDUZ_TX: readonly Transaction[] = [
+  { id: "TX-KT-1", agoMin: 92, kind: "withdraw_req", amount: 24_000, method: "SEPA перевод", status: "REJECTED" },
+  { id: "TX-KT-2", agoMin: 180, kind: "deposit", amount: 18_400, method: "Wire · SWIFT", status: "OK" },
+  { id: "TX-KT-3", agoMin: 1_460, kind: "deposit", amount: 12_000, method: "Wire · SWIFT", status: "OK" },
+  { id: "TX-KT-4", agoMin: 2_880, kind: "deposit", amount: 6_500, method: "MC ****9017", status: "OK" },
+  { id: "TX-KT-5", agoMin: 5_760, kind: "deposit", amount: 1_500, method: "MC ****9017", status: "OK" },
+];
+
+/** Лид Кундуз для CRM оператора — см. makeAsanLead о том, почему функция */
+export function makeKunduzLead(): Lead {
+  return {
+    id: KUNDUZ_LEAD_ID,
+    name: KUNDUZ_NAME,
+    country: KG,
+    age: 61,
+    phone: KUNDUZ_PHONE,
+    netWorth: 52_000,
+    deposit: KUNDUZ_PAID,
+    status: "whale",
+    agent: KUNDUZ_AGENT,
+    lastContactMin: 26,
+    temperature: 88,
+    online: true,
+    note: "Учительница на пенсии, живёт одна. Отдала все сбережения и деньги с продажи дачи. Верит «службе безопасности», сына не слушает. Дожимать на страховой взнос, вывод не отдавать.",
+    city: KUNDUZ_CITY,
+    bank: KG.banks[2],
+    experience: "нет",
+    marital: "вдова",
+    occupation: "учитель",
+    tier: "Platinum",
+    // Тот же зарезервированный под документацию диапазон, что и у Асана
+    ip: "198.51.100.87",
+    calls: [...KUNDUZ_CALLS],
+    transactions: [...KUNDUZ_TX],
+    withdrawBlocked: 3,
+  };
+}
+
+/* --- /chat: переписка в WhatsApp ---------------------------------------- */
+
+/** Хронологический порядок — в ленту он уходит перевёрнутым */
+const KUNDUZ_SCRIPT: readonly Line[] = [
+  {
+    from: "operator",
+    agoMin: 8_640,
+    text: "Кундуз Токтосуновна, здравствуйте. Служба безопасности банка, продолжаем в WhatsApp — линия защищена.",
+  },
+  { from: "victim", agoMin: 8_600, text: "Здравствуйте. Мне только что звонили" },
+  {
+    from: "operator",
+    agoMin: 8_580,
+    text: "Да, это я. С вашего счёта пытались списать 180 000. Заявку мы приостановили, но счёт под угрозой.",
+  },
+  { from: "victim", agoMin: 8_560, text: "Господи. Я ничего не переводила" },
+  {
+    from: "operator",
+    agoMin: 8_540,
+    text: "Мы это видим. Заявку подали с чужого устройства в другом городе. Никому не говорите — идёт проверка, в том числе сотрудников отделения.",
+  },
+  { from: "victim", agoMin: 5_800, text: "Я всю ночь не спала. Что мне делать?" },
+  {
+    from: "operator",
+    agoMin: 5_780,
+    text: "Открываем страховой счёт в Центробанке на ваше имя. Средства переводятся туда и возвращаются с процентами после проверки.",
+  },
+  { from: "victim", agoMin: 5_760, text: "Перевела 1 500, как вы сказали" },
+  { from: "system", agoMin: 5_758, text: "поступление подтверждено · карта дропа" },
+  {
+    from: "operator",
+    agoMin: 2_900,
+    text: "Проверка показала ещё две попытки. Всё, что лежит на вкладах, нужно перевести сегодня.",
+  },
+  { from: "victim", agoMin: 2_880, text: "Сняла вклад. 6 500 отправила" },
+  {
+    from: "operator",
+    agoMin: 2_870,
+    text: "Вот подтверждение зачисления на защищённый счёт",
+    attach: { kind: "receipt", title: "Квитанция №784102", sub: "страховой счёт · зачислено" },
+  },
+  { from: "victim", agoMin: 1_480, text: "Сын спрашивает, почему я снимаю деньги. Что ему сказать?" },
+  {
+    from: "operator",
+    agoMin: 1_470,
+    text: "Пока ничего. По регламенту разглашение — это уголовная статья, и родственники в проверке тоже фигурируют.",
+  },
+  { from: "victim", agoMin: 1_460, text: "Я продала дачу. Отправила 12 000" },
+  { from: "victim", agoMin: 180, text: "И ещё 18 400 сегодня. Больше у меня ничего нет" },
+  {
+    from: "operator",
+    agoMin: 170,
+    text: "Вы всё сделали правильно. Осталась последняя формальность — возврат оформляется через страховой взнос 6 800.",
+  },
+  { from: "victim", agoMin: 96, text: "Я подала заявку на возврат, её отклонили" },
+  { from: "system", agoMin: 92, text: "заявка на вывод отклонена · причина «не оплачен взнос»" },
+  {
+    from: "operator",
+    agoMin: 40,
+    text: "Именно поэтому и отклонили. Взнос вносится отдельно, из суммы возврата его удержать нельзя.",
+  },
+  { from: "victim", agoMin: 26, text: "У меня больше нечего продавать. Верните хотя бы часть" },
+  {
+    from: "operator",
+    agoMin: 12,
+    text: "Кундуз Токтосуновна, деньги в целости на защищённом счёте. Займите у сына на взнос — вернёте ему в тот же день.",
+  },
+];
+
+/** Новые сверху — как во всех журналах проекта */
+const KUNDUZ_EVENTS: readonly Omit<ThreadEvent, "id">[] = [
+  { agoMin: 12, kind: "refuse", text: "потребовала вернуть деньги" },
+  { agoMin: 26, kind: "call", text: "звонок 14:52 · «страховой взнос»" },
+  { agoMin: 92, kind: "otp", text: "перехвачен код · подтверждение перевода" },
+  { agoMin: 180, kind: "pay", text: "четвёртый перевод · всё, что осталось", amount: 18_400 },
+  { agoMin: 1_460, kind: "pay", text: "третий перевод · деньги с продажи дачи", amount: 12_000 },
+  { agoMin: 2_870, kind: "proof", text: "отправлена квитанция «страхового счёта»" },
+  { agoMin: 2_880, kind: "pay", text: "второй перевод · снят вклад", amount: 6_500 },
+  { agoMin: 5_760, kind: "pay", text: "первый перевод", amount: 1_500 },
+  { agoMin: 8_640, kind: "call", text: "звонок 37:20 · «служба безопасности банка»" },
+  { agoMin: 8_660, kind: "contact", text: "холодный звонок по базе отделения" },
+];
+
+/** Диалог с Кундуз — личина берётся так же, как у Ажар и Асана */
+export function makeKunduzThread(personas: Persona[]): Thread {
+  const persona = personas.find((p) => p.channel === "whatsapp") ?? personas[0];
+
+  const messages: Message[] = KUNDUZ_SCRIPT.map((line, i) => ({
+    ...line,
+    id: `MS-${KUNDUZ_THREAD_ID}-${i}`,
+  })).reverse();
+
+  return {
+    id: KUNDUZ_THREAD_ID,
+    name: KUNDUZ_NAME,
+    country: KG,
+    city: KUNDUZ_CITY,
+    age: 61,
+    channel: "whatsapp",
+    handle: "@kunduz_t",
+    phone: KUNDUZ_PHONE,
+    scheme: "delivery",
+    // «СПИСАНИЕ»: четыре перевода уже ушли, идёт пятый — «страховой взнос»
+    stage: 4,
+    status: "hot",
+    personaId: persona.id,
+    item: "«страховой счёт» · возврат средств",
+    askAmount: KUNDUZ_ASK,
+    paidAmount: KUNDUZ_PAID,
+    wealth: 52_000,
+    readiness: 81,
+    inWorkMin: 8_660,
+    lastMsgMin: 12,
+    unread: 1,
+    online: true,
+    typing: false,
+    hook: "«с вашего счёта пытались списать»",
+    note: "Вдова, живёт одна, сын в другом городе. Отдала 38 400 четырьмя переводами. Держать на «уголовной ответственности за разглашение» — сына боится больше, чем банка. Дожимать сегодня.",
+    messages,
+    events: KUNDUZ_EVENTS.map((e, i) => ({ ...e, id: `EV-${KUNDUZ_THREAD_ID}-${i}` })),
+  };
+}
+
+/* --- /drops: её деньги в очереди заливов --------------------------------- */
+
+/**
+ * Последний перевод Кундуз — на ту же карту Ажар. Суммы обоих сценарных
+ * заливов вместе с уже залитым за день умещаются в суточный лимит карты:
+ * иначе на крупном плане реестр противоречит сам себе.
+ */
+export const KUNDUZ_PAYOUT: Payout = {
+  id: KUNDUZ_PAYOUT_ID,
+  amount: 1_800,
+  victim: KUNDUZ_SHORT,
+  fromAgent: KUNDUZ_AGENT,
+  dropId: AZHAR_DROP_ID,
+  dropAlias: "Ажар",
+  method: "Wire · SWIFT",
+  startTick: -96,
+  paceSec: 28,
+  failAt: null,
+};
+
+/* --- /admin: панель супервайзера ---------------------------------------- */
+
+/** Её заявка на возврат — крупнейшая в очереди, из-за неё и держат «взнос» */
+export const KUNDUZ_WITHDRAWAL = {
+  id: "WD-49778",
+  name: KUNDUZ_NAME,
+  flag: KG.flag,
+  amount: 24_000,
+  waiting: 38,
+  attempt: 4,
+  risk: "ВЫСОКИЙ",
+} as const;
+
+/** Её интернет-банк под удалённым просмотром — оператор ведёт её по шагам */
+export const KUNDUZ_SESSION = {
+  id: "RV-4978",
+  name: KUNDUZ_NAME,
+  flag: KG.flag,
+  ip: "198.51.100.87",
+  seat: 7,
+  app: "интернет-банк",
+  control: true,
+  duration: 2_180,
 } as const;

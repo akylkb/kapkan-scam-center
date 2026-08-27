@@ -16,7 +16,12 @@ import { BRAND } from "@/lib/brand";
 import { Rng } from "@/lib/prng";
 import { AGENT_STATE_META, makeAgents, type Agent } from "@/lib/fixtures/agents";
 import { INSTRUMENTS, pickCountry, pickName } from "@/lib/fixtures/pools";
-import { ASAN_SESSION, ASAN_WITHDRAWAL } from "@/lib/fixtures/cast";
+import {
+  ASAN_SESSION,
+  ASAN_WITHDRAWAL,
+  KUNDUZ_SESSION,
+  KUNDUZ_WITHDRAWAL,
+} from "@/lib/fixtures/cast";
 import { mmss, usd } from "@/lib/format";
 import { SceneClock } from "@/components/shared/SceneClock";
 import { Ticker } from "@/components/shared/Ticker";
@@ -57,9 +62,13 @@ export function AdminScreen() {
         i,
       };
     }).sort((a, b) => b.amount - a.amount);
-    // Сценарный Асан — первой строкой, поверх сортировки по сумме: его заявку
-    // в кадре открывают и отклоняют вручную, искать её в списке некогда
-    return [{ ...ASAN_WITHDRAWAL, i: -1 }, ...rows];
+    // Сценарные заявки — первыми строками, поверх сортировки по сумме: их
+    // в кадре открывают и отклоняют вручную, искать их в списке некогда
+    return [
+      { ...KUNDUZ_WITHDRAWAL, i: -2 },
+      { ...ASAN_WITHDRAWAL, i: -1 },
+      ...rows,
+    ];
   }, []);
 
   // Кто из операторов прямо сейчас видит экран своей жертвы
@@ -80,9 +89,9 @@ export function AdminScreen() {
         duration: rng.int(40, 2600) + i,
       };
     });
-    // Первая сессия — машина Асана: это ровно тот экран, который показан
-    // на /client, и супервайзер смотрит его прямо сейчас
-    return [ASAN_SESSION, ...rows];
+    // Первые сессии — машины сценарных жертв: у Асана это ровно тот экран,
+    // который показан на /client, у Кундуз — её интернет-банк
+    return [ASAN_SESSION, KUNDUZ_SESSION, ...rows];
   }, []);
 
   const quotes = useMemo(() => {
