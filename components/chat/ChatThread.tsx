@@ -88,7 +88,7 @@ export function ChatThread({
             </p>
           ) : (
             <p className="truncate font-mono text-[9px] tracking-[0.08em] text-zinc-600">
-              {thread.id} · {thread.city} · {thread.phone} · личина {persona.handle}
+              {thread.id} · {thread.city} · {thread.phone}
             </p>
           )}
         </div>
