@@ -309,8 +309,8 @@ export function CallOverlay({
         <FlashCard
           key={handledAt ?? 0}
           tone="done"
-          title="ОБРАБОТАН"
-          sub={`звонок закрыт · ${thread.id}`}
+          title="АСАН АМАНОВ ОБРАБОТАН"
+          sub={`сделка закрыта · ${thread.id}`}
         />
       )}
     </div>
