@@ -147,7 +147,7 @@ export function CallOverlay({
               {thread.name}
             </p>
             <p className="truncate font-mono text-[10px] tracking-[0.08em] text-zinc-500">
-              {thread.phone} · {thread.city}»
+              {thread.phone} · {thread.city}
             </p>
           </div>
           <span

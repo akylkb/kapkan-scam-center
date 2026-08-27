@@ -389,7 +389,7 @@ export function makeAsanThread(personas: Persona[]): Thread {
     scheme: "crypto",
     // «СПИСАНИЕ»: деньги уже забрали, теперь выбивают «комиссию за вывод»
     stage: 4,
-    status: "hot",
+    status: "talking",
     personaId: persona.id,
     item: "«инвестплощадка» · комиссия за вывод",
     askAmount: ASAN_ASK,
@@ -641,7 +641,7 @@ export function makeKunduzThread(personas: Persona[]): Thread {
     scheme: "delivery",
     // «СПИСАНИЕ»: четыре перевода уже ушли, идёт пятый — «страховой взнос»
     stage: 4,
-    status: "hot",
+    status: "talking",
     personaId: persona.id,
     item: "«страховой счёт» · возврат средств",
     askAmount: KUNDUZ_ASK,
