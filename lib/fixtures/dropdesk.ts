@@ -2,6 +2,7 @@ import { seatRng } from "@/lib/prng";
 import { DROP_POOLS } from "@/lib/brand";
 import { AGENT_ALIASES, AGENT_REAL, CASH_CITIES, COURIERS } from "./pools";
 import { makeDrops, loadPct, type Drop } from "./drops";
+import { AZHAR_DROP } from "./cast";
 import { makePayouts, type Payout } from "./payouts";
 
 /** Точка снятия наличных на региональной карте */
@@ -58,7 +59,12 @@ export function buildDropDesk(seat: number): DropDesk {
 
   // 90 строк — реестр гарантированно уходит за нижний край экрана.
   // Наполовину пустая таблица в кадре сразу читается как макет.
-  const drops = makeDrops(seatRng(seat, "drops"), 90);
+  // Сценарная Ажар — тот же человек, что и в /chat: её карточку открывают
+  // в кадре по имени, искать её по реестру некогда. Но не первой строкой:
+  // экран открывается на drops[0], и первой она держала бы одну и ту же
+  // карточку на всех десяти мониторах в общем плане.
+  const generated = makeDrops(seatRng(seat, "drops"), 90);
+  const drops = [generated[0], AZHAR_DROP, ...generated.slice(1)];
   const payouts = makePayouts(seatRng(seat, "payouts"), drops, 22);
 
   const cashRng = seatRng(seat, "cash");

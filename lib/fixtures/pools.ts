@@ -572,7 +572,7 @@ export const PERSONA_LEGENDS = [
 /** Куски никнеймов для фейковых аккаунтов */
 export const HANDLE_WORDS = [
   "marina", "alex", "kris", "dana", "oleg", "vika", "timur", "sofia",
-  "roma", "lena", "artem", "nika", "ruslan", "olya", "denis", "kamila",
+  "roma", "lena", "artem", "nika", "ruslan", "tatyana", "denis", "kamila",
 ] as const;
 
 /** Шаблоны фишинговых страниц — подо что косит ссылка */

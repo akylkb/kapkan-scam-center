@@ -44,14 +44,22 @@ export const CHANNEL_META: Record<ChatChannel, StatusMeta & { short: string }> =
   },
 };
 
-/** Схема развода — от неё зависит и сценарий переписки, и инструмент */
-export type Scheme = "goods" | "delivery" | "romance" | "crypto";
+/**
+ * Схема развода — от неё зависит и сценарий переписки, и инструмент.
+ *
+ * «job» — вербовка: контора не продаёт жертве товар, а нанимает её саму
+ * и делает из неё дропа. Генератор эту схему не выбирает: по ней идут
+ * только сценарные персонажи из lib/fixtures/cast.ts, которых пишут руками.
+ */
+export type Scheme = "goods" | "delivery" | "romance" | "crypto" | "job";
 
 export const SCHEME_META: Record<Scheme, { label: string; short: string; text: string }> = {
   goods: { label: "Товар · продажа", short: "ТОВАР", text: "text-cyan-300" },
   delivery: { label: "Доставка / банк-СБ", short: "ДОСТАВКА", text: "text-amber-300" },
   romance: { label: "Романтика", short: "РОМАН", text: "text-fuchsia-300" },
   crypto: { label: "Крипта · «инвестиции»", short: "КРИПТА", text: "text-emerald-300" },
+  // Цвет дроповода: вербовка кончается тем, что человек уезжает в его реестр
+  job: { label: "Работа · вербовка", short: "РАБОТА", text: "text-violet-300" },
 };
 
 /**
@@ -334,6 +342,38 @@ const SPINE: Record<Scheme, readonly Beat[]> = {
     { from: "system", stage: 4, text: "жертва открыла ссылку · пополнение подтверждено" },
     { from: "victim", stage: 4, text: "Завёл. Когда можно выводить?" },
     { from: "operator", stage: 4, text: "Через сутки. Только сначала комиссия площадки, {fee} от суммы" },
+  ],
+  // Вербовка. Генератор эту ветку не берёт — по ней идут сценарные персонажи,
+  // у которых переписка написана руками. Хребет держим ради полноты схемы:
+  // этапы воронки те же, но «списание» здесь — это карта, отданная конторе.
+  job: [
+    { from: "victim", stage: 0, text: "Здравствуйте! Увидел объявление про подработку. Ещё актуально?" },
+    { from: "operator", stage: 0, text: "Здравствуйте) Да, набор идёт. Занятость 2–3 часа в день, удалённо." },
+    { from: "victim", stage: 0, text: "А что делать нужно?" },
+    { from: "operator", stage: 1, text: "Принимать переводы клиентов на свою карту и передавать инкассатору. Ваши {fee} с каждой суммы." },
+    { from: "victim", stage: 1, text: "А это законно?" },
+    {
+      from: "operator",
+      stage: 1,
+      text: "Полностью. Мы платёжный агент. Вот договор, посмотрите",
+      attach: { kind: "receipt", title: "Договор №{doc}", sub: "оферта · 2 стр. · с печатью" },
+    },
+    { from: "victim", stage: 2, text: "Что нужно для начала?" },
+    { from: "operator", stage: 2, text: "Карта на ваше имя и паспорт для договора. Фото разворота сюда." },
+    { from: "system", stage: 2, text: "получено фото документа · сохранено в досье" },
+    { from: "victim", stage: 2, text: "Отправил. Карта зарплатная" },
+    {
+      from: "operator",
+      stage: 3,
+      text: "Анкету заполните тут, займёт минуту:",
+      attach: { kind: "link", title: "{link}", sub: "анкета кандидата · {market}" },
+    },
+    { from: "system", stage: 3, text: "ссылка отправлена · шаблон «анкета кандидата»" },
+    { from: "victim", stage: 3, text: "Заполнил. Когда первый перевод?" },
+    { from: "operator", stage: 3, text: "Сегодня пришлём тестовый. Снимете наличными и передадите курьеру." },
+    { from: "system", stage: 4, text: "карта заведена в реестр · прогрев мелкими" },
+    { from: "victim", stage: 4, text: "Пришло {amount}, снял. Курьер забрал" },
+    { from: "operator", stage: 4, text: "Умница) Ваш процент начислю вечером. Завтра суммы будут крупнее." },
   ],
 };
 

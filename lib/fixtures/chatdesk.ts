@@ -10,6 +10,7 @@ import {
 } from "./pools";
 import { makePersonas, type Persona } from "./personas";
 import { makeThreads, type Scheme, type Thread } from "./threads";
+import { makeAzharThread } from "./cast";
 
 /** Событие в логе фишинговой ссылки */
 export type LinkEvent = {
@@ -172,7 +173,12 @@ export function buildChatDesk(seat: number): ChatDesk {
 
   // 42 диалога — список гарантированно уходит за нижний край.
   // Наполовину пустая колонка в кадре читается как макет.
-  const threads = makeThreads(seatRng(seat, "threads"), personas, 42, bias);
+  // Сценарная Ажар стоит первой строкой на всех местах: её диалог играют
+  // по имени, и он должен открываться в один клик с любой машины.
+  const threads = [
+    makeAzharThread(personas),
+    ...makeThreads(seatRng(seat, "threads"), personas, 42, bias),
+  ];
 
   const phishRng = seatRng(seat, "phish");
   const template = PHISH_TEMPLATES[(seat - 1) % PHISH_TEMPLATES.length];
