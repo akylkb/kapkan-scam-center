@@ -183,9 +183,9 @@ export const ASAN_LEAD_ID = "LD-49777";
 export const ASAN_THREAD_ID = "TH-4779";
 export const ASAN_PAYOUT_ID = "PO-38777";
 
-export const ASAN_NAME = "Асан Аманов";
+export const ASAN_NAME = "Кредит";
 /** Инициалы для лент и очередей: «🇰🇬 Асан А.» */
-export const ASAN_SHORT = `${KG.flag} Асан А.`;
+export const ASAN_SHORT = `${KG.flag} Кредит`;
 const ASAN_CITY = "Ош";
 const ASAN_PHONE = maskPhone(KG.cc, `${KG.dial}173094`);
 
