@@ -634,9 +634,9 @@ export const VOICE_PRESETS = [
   { id: "bank-m", label: "Оператор банка", pitch: -2, pace: 96 },
   { id: "courier-f", label: "Курьер", pitch: +3, pace: 108 },
   { id: "young-m", label: "Молодой", pitch: +1, pace: 112 },
-  { id: "soft-f", label: "Мягкий · ж", pitch: +4, pace: 92 },
-  { id: "elder-m", label: "Пожилой · м", pitch: -5, pace: 84 },
-  { id: "police-m", label: "Следователь · м", pitch: -4, pace: 90 },
+  { id: "soft-f", label: "Молодой", pitch: +4, pace: 92 },
+  { id: "elder-m", label: "Молодой", pitch: -5, pace: 84 },
+  { id: "police-m", label: "Молодой", pitch: -4, pace: 90 },
 ] as const;
 
 /** Библиотека лиц для видеозвонка */
