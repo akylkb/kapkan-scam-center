@@ -632,11 +632,11 @@ export const CHAT_NOTES = [
 /** Пресеты подмены голоса */
 export const VOICE_PRESETS = [
   { id: "bank-m", label: "Оператор банка", pitch: -2, pace: 96 },
-  { id: "courier-f", label: "Курьер", pitch: +3, pace: 108 },
-  { id: "young-m", label: "Молодой", pitch: +1, pace: 112 },
-  { id: "soft-f", label: "Молодой", pitch: +4, pace: 92 },
-  { id: "elder-m", label: "Молодой", pitch: -5, pace: 84 },
-  { id: "police-m", label: "Молодой", pitch: -4, pace: 90 },
+  { id: "courier-f", label: "Оператор банка", pitch: +3, pace: 108 },
+  { id: "young-m", label: "Оператор банка", pitch: +1, pace: 112 },
+  { id: "soft-f", label: "Оператор банка", pitch: +4, pace: 92 },
+  { id: "elder-m", label: "Оператор банка", pitch: -5, pace: 84 },
+  { id: "police-m", label: "Оператор банка", pitch: -4, pace: 90 },
 ] as const;
 
 /** Библиотека лиц для видеозвонка */
