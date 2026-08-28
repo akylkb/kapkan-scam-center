@@ -207,7 +207,7 @@ export function Composer({
             spellCheck={false}
             autoComplete="off"
             placeholder="Введите сообщение"
-            className="_typeMessage flex-1 select-text bg-transparent text-[12.5px] text-zinc-200 placeholder:text-zinc-600"
+            className="_typeMessage flex-1 select-text bg-transparent text-[12.5px] text-[#04b404] placeholder:text-zinc-600"
           />
         )}
         <button

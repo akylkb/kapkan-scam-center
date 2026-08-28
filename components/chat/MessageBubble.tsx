@@ -54,7 +54,7 @@ export function MessageBubble({ msg, onDelete }: { msg: Message; onDelete: () =>
             : "border-zinc-800 bg-zinc-800/60",
         )}
       >
-        <p className="text-[12.5px] leading-snug break-words text-zinc-200">
+        <p className="text-[12.5px] leading-snug break-words text-[#04b404]">
           {highlight(msg.text, msg.flags)}
         </p>
 
