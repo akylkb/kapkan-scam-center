@@ -112,7 +112,7 @@ export function makePersonas(rng: Rng, count: number): Persona[] {
         ["telegram", 38],
         ["instagram", 18],
       ]),
-      legend: rng.pick(PERSONA_LEGENDS),
+      legend: '',
       ageDays,
       // Прогрев падает вместе с возрастом: свежий аккаунт ещё «пустой»
       warmth:
