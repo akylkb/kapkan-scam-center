@@ -34,7 +34,7 @@ const KG = COUNTRIES.find((c) => c.code === "KG")!;
 export const AZHAR_THREAD_ID = "TH-4777";
 export const AZHAR_DROP_ID = "DR-7777";
 
-const AZHAR_NAME = "Ажар Сеитова";
+const AZHAR_NAME = "Декрет";
 const AZHAR_CITY = "Бишкек";
 const AZHAR_BANK = KG.banks[0];
 const AZHAR_PHONE = maskPhone(KG.cc, `${KG.dial}204831`);
@@ -53,35 +53,14 @@ type Line = Omit<Message, "id"> & { agoMin: number };
 const SCRIPT: readonly Line[] = [
   {
     from: "victim",
-    agoMin: 1_180,
-    text: "Здравствуйте! Увидела объявление про подработку. Ещё актуально?",
+    agoMin: 60 * 24 * 7,
+    text: "Саламатсызбы! Мен объявление боюнча, онлайн жумуш тууралуу, жазып жатам",
   },
   {
     from: "operator",
-    agoMin: 1_166,
-    text: "Здравствуйте, Ажар. Да, набор идёт. Занятость 2–3 часа в день, оформление удалённое.",
-  },
-  { from: "victim", agoMin: 1_150, text: "А что делать нужно?" },
-  {
-    from: "operator",
-    agoMin: 1_142,
-    text: "Принимать переводы наших клиентов на свою карту и передавать инкассатору. Ваши 8% с каждой суммы.",
-  },
-  { from: "system", agoMin: 1_106, text: "вложение отправлено · шаблон «договор оферты»" },
-  { from: "victim", agoMin: 1_040, text: "Извините, только освободилась. Сколько выходит в месяц?" },
-  {
-    from: "operator",
-    agoMin: 1_032,
-    text: "У девочек в вашем городе от $600. Первую выплату получаете уже завтра.",
-  },
-  { from: "victim", agoMin: 640, text: "Что нужно для начала?" },
-  {
-    from: "operator",
-    agoMin: 628,
-    text: "Карта любого банка на ваше имя и паспорт для договора. Фото разворота пришлите сюда.",
-  },
-  { from: "victim", agoMin: 470, text: "Отправила. Карта ZIBANK" },
-  { from: "system", agoMin: 468, text: "получено фото документа · сохранено в досье" },
+    agoMin: 60 * 24 * 7,
+    text: "Саламатсызбы! Жакында байланышабыз",
+  }
 ];
 
 /* ---------------------------------------------------------------------------
