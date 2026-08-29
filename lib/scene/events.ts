@@ -7,6 +7,7 @@
 
 export type SceneEventKind =
   | "call.incoming"
+  | "call.ringing"
   | "deposit"
   | "client.lost"
   | "whale"
@@ -33,6 +34,12 @@ export const DIRECTOR_KEYS: readonly DirectorKey[] = [
     key: "1",
     label: "Входящий звонок",
     hint: "Софтфон поднимает трубку, таймер с нуля",
+  },
+  {
+    kind: "call.ringing",
+    key: "8",
+    label: "Клиент звонит сам",
+    hint: "У чатера модалка входящего вызова: номер без имени, «принять» / «отклонить»",
   },
   {
     kind: "deposit",
@@ -70,12 +77,12 @@ export const DIRECTOR_KEYS: readonly DirectorKey[] = [
     label: "Дроп сгорел",
     hint: "У дроповода карта краснеет, залив по ней срывается",
   },
-  {
-    kind: "payout.sent",
-    key: "8",
-    label: "Залив ушёл",
-    hint: "Деньги прошли цепочку, касса и счётчик вывода прыгают",
-  },
+  // {
+  //   kind: "payout.sent",
+  //   key: "8",
+  //   label: "Залив ушёл",
+  //   hint: "Деньги прошли цепочку, касса и счётчик вывода прыгают",
+  // },
   {
     kind: "link.opened",
     key: "9",

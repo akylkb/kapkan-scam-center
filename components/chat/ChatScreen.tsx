@@ -27,6 +27,7 @@ import {
   selectSigDeposit,
   selectSigLink,
   selectSigLost,
+  selectSigRing,
   selectSigWhale,
   useSceneValue,
 } from "@/lib/scene/SceneProvider";
@@ -39,6 +40,7 @@ import { ThreadList } from "./ThreadList";
 import { ChatThread } from "./ChatThread";
 import { VictimCard } from "./VictimCard";
 import { CallOverlay, RING_TICKS, type Call } from "./CallOverlay";
+import { IncomingCall } from "./IncomingCall";
 import { ToolDock, type ToolId } from "./ToolDock";
 
 /** Что режиссёр поменял в конкретном диалоге по ходу дубля */
@@ -75,6 +77,11 @@ export function ChatScreen({ seat }: { seat: number }) {
   // Разговор держим здесь, а не в панели голоса: иначе переключение вкладки
   // дока обрывало бы звонок. Отсюда же он рисуется модалкой поверх экрана
   const [call, setCall] = useState<Call | null>(null);
+  /**
+   * Входящий вызов, на который ещё не ответили: тик, когда он пошёл.
+   * null — телефон молчит. Разговором это станет только после «Принять».
+   */
+  const [ringingAt, setRingingAt] = useState<number | null>(null);
 
   const epoch = useSceneValue(selectEpoch);
   const sceneCallStart = useSceneValue(selectCallStart);
@@ -84,6 +91,7 @@ export function ChatScreen({ seat }: { seat: number }) {
   const sigWhale = useSceneValue(selectSigWhale);
   const sigLost = useSceneValue(selectSigLost);
   const sigCall = useSceneValue(selectSigCall);
+  const sigRing = useSceneValue(selectSigRing);
 
   // Правки режиссёра и реплики оператора накладываются поверх фикстур: сами
   // фикстуры не мутируем, иначе Ctrl+Alt+R не вернёт исходное состояние.
@@ -329,8 +337,10 @@ export function ChatScreen({ seat }: { seat: number }) {
     const th = threads.find((t) => t.id === selectedId) ?? threads[0];
     const line = makeSuspicionLine(rng);
 
-    // Клиент бросает трубку вместе с доверием
+    // Клиент бросает трубку вместе с доверием — и трубку, которую ещё
+    // не подняли, тоже: звонить дальше некому
     setCall(null);
+    setRingingAt(null);
     setOverrides((prev) => ({
       ...prev,
       [th.id]: { ...prev[th.id], status: "suspicious", blown: true },
@@ -357,9 +367,22 @@ export function ChatScreen({ seat }: { seat: number }) {
   useEffect(() => {
     if (sigCall === 0) return;
     setTool("voice");
+    setRingingAt(null);
     setCall({ startTick: sceneCallStart, ringTicks: 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sigCall]);
+
+  // Ctrl+Alt+C — клиент звонит сам: сначала модалка входящего с номером и
+  // двумя кнопками, разговор начнётся только если актёр примет вызов.
+  // Тик вызова берём из store (callStartTick), чтобы не подписывать экран
+  // на тик и не перерисовывать его четыре раза в секунду
+  useEffect(() => {
+    if (sigRing === 0) return;
+    setTool("voice");
+    setCall(null);
+    setRingingAt(sceneCallStart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sigRing]);
 
   // Ctrl+Alt+R — сброс дубля
   useEffect(() => {
@@ -375,6 +398,7 @@ export function ChatScreen({ seat }: { seat: number }) {
     setExtraHits(0);
     setBannedPersonaId(null);
     setCall(null);
+    setRingingAt(null);
     setTypingIn(null);
   }, [epoch, openingId]);
 
@@ -440,6 +464,20 @@ export function ChatScreen({ seat }: { seat: number }) {
         дока: на крупном плане должно быть видно лицо жертвы, таймер и
         осциллограмму, а не мелкую колонку справа.
       */}
+      {/* Входящий вызов — до разговора и вместо него: две модалки разом
+          в кадре не пересекаются */}
+      {ringingAt !== null && call === null && (
+        <IncomingCall
+          thread={selected}
+          startTick={ringingAt}
+          onAccept={(tick) => {
+            setRingingAt(null);
+            setCall({ startTick: tick, ringTicks: 0 });
+          }}
+          onReject={() => setRingingAt(null)}
+        />
+      )}
+
       {call && (
         <CallOverlay
           call={call}

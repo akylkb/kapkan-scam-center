@@ -32,6 +32,8 @@ export type SceneState = {
   sigWhale: number;
   sigLost: number;
   sigCall: number;
+  /** Клиент звонит сам: у чатера модалка входящего вызова до разговора */
+  sigRing: number;
   sigWithdraw: number;
   /** Экран дроповода: сгоревшая карта и ушедший залив */
   sigDropBurn: number;
@@ -64,6 +66,7 @@ function initialState(seat: number): SceneState {
     sigWhale: 0,
     sigLost: 0,
     sigCall: 0,
+    sigRing: 0,
     sigWithdraw: 0,
     sigDropBurn: 0,
     sigPayout: 0,
@@ -172,6 +175,23 @@ export class SceneStore {
         this.pushFeed({
           kind: "call",
           text: `Входящий · ${country.ru}`,
+        });
+        break;
+
+      // Клиент звонит сам: трубку ещё не подняли — экран чатера покажет
+      // модалку входящего, а разговор начнётся только с «Принять вызов».
+      // Тик вызова кладём в тот же callStartTick, что и у прочих звонков:
+      // экрану не нужно подписываться на тик, чтобы поймать начало
+      case "call.ringing":
+        this.set({
+          callStartTick: this.state.tick,
+          sigRing: this.state.sigRing + 1,
+          lastName: name,
+          lastFlag: country.flag,
+        });
+        this.pushFeed({
+          kind: "call",
+          text: `Входящий вызов · ${country.ru} · ждёт ответа`,
         });
         break;
 

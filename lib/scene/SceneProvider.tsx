@@ -97,6 +97,7 @@ export const selectCallActive = (s: SceneState) => s.callActive;
 export const selectCallStart = (s: SceneState) => s.callStartTick;
 export const selectSigDeposit = (s: SceneState) => s.sigDeposit;
 export const selectSigCall = (s: SceneState) => s.sigCall;
+export const selectSigRing = (s: SceneState) => s.sigRing;
 export const selectSigWhale = (s: SceneState) => s.sigWhale;
 export const selectSigLost = (s: SceneState) => s.sigLost;
 export const selectSigWithdraw = (s: SceneState) => s.sigWithdraw;
