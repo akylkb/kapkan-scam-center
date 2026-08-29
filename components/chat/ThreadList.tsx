@@ -14,10 +14,13 @@ import { cx } from "@/components/shared/ui";
 export function ThreadList({
   threads,
   selectedId,
+  typingId,
   onSelect,
 }: {
   threads: Thread[];
   selectedId: string;
+  /** Диалог, в котором жертва прямо сейчас набирает текст на /victim/N */
+  typingId: string | null;
   onSelect: (id: string) => void;
 }) {
   const unread = threads.reduce((sum, t) => sum + (t.unread > 0 ? 1 : 0), 0);
@@ -53,6 +56,7 @@ export function ThreadList({
           const ch = CHANNEL_META[t.channel];
           const line = lastLine(t);
           const selected = t.id === selectedId;
+          const typing = t.id === typingId;
 
           return (
             <button
@@ -98,14 +102,14 @@ export function ThreadList({
                   <span
                     className={cx(
                       "min-w-0 flex-1 truncate text-[10.5px]",
-                      t.typing
-                        ? "animate-blink text-cyan-400"
+                      typing
+                        ? "text-cyan-400"
                         : line?.from === "victim"
                           ? "text-zinc-400"
                           : "text-zinc-600",
                     )}
                   >
-                    {t.typing
+                    {typing
                       ? "печатает…"
                       : line
                         ? `${line.from === "operator" ? "вы: " : ""}${line.text}`

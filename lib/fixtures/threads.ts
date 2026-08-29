@@ -186,7 +186,6 @@ export type Thread = {
   lastMsgMin: number;
   unread: number;
   online: boolean;
-  typing: boolean;
   hook: string;
   note: string;
   /** Новые сверху — как в истории операций у дроповода */
@@ -693,8 +692,6 @@ export function makeThread(
       [rng.int(4, 12), 20],
     ]),
     online: rng.chance(0.44),
-    // typing: rng.chance(0.12),
-    typing: false,
     hook: rng.pick(CHAT_HOOKS),
     note: rng.pick(CHAT_NOTES),
     messages: [],

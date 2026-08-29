@@ -393,7 +393,12 @@ export function ChatScreen({ seat }: { seat: number }) {
           />
         </ChatFilters>
 
-        <ThreadList threads={list} selectedId={selected.id} onSelect={setSelectedId} />
+        <ThreadList
+          threads={list}
+          selectedId={selected.id}
+          typingId={typingIn}
+          onSelect={setSelectedId}
+        />
 
         <ChatThread
           key={selected.id}

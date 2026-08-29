@@ -116,9 +116,8 @@ export function makeAzharThread(personas: Persona[]): Thread {
     readiness: 74,
     inWorkMin: 1_180,
     lastMsgMin: 6,
-    unread: 2,
+    unread: 0,
     online: true,
-    typing: false,
     hook: "«стабильный доход, 2 часа в день»",
     note: "Разведена, есть ребенок. Деньги нужны сейчас — не торговаться, обещать выплату завтра. Карту уже отдала.",
     messages,
@@ -379,7 +378,6 @@ export function makeAsanThread(personas: Persona[]): Thread {
     lastMsgMin: 3,
     unread: 3,
     online: true,
-    typing: false,
     hook: "«вывод заблокирован, нужна комиссия»",
     note: "Занёс $3 200 тремя платежами, продал грузовик. Вывод не отдавать. Ищет, у кого занять 2 400 — дожимать сегодня, пока не посоветовался с братом.",
     messages,
@@ -565,9 +563,8 @@ export function makeKunduzThread(personas: Persona[]): Thread {
     readiness: 81,
     inWorkMin: 8_660,
     lastMsgMin: 12,
-    unread: 1,
+    unread: 0,
     online: true,
-    typing: false,
     hook: "«с вашего счёта пытались списать»",
     note: "Вдова, живёт одна, сын в другом городе. Отдала 38 400 четырьмя переводами. Держать на «уголовной ответственности за разглашение» — сына боится больше, чем банка. Дожимать сегодня.",
     messages,
@@ -638,7 +635,7 @@ export const MAMA_THREAD_ID = "TH-4783";
 export const MAMA_NAME = "Мама в декрете";
 /** Инициалы для лент и очередей: «🇰🇬 Мама в декрете» */
 export const MAMA_SHORT = `${KG.flag} ${MAMA_NAME}`;
-const MAMA_CITY = "Токмок";
+const MAMA_CITY = "Бишкек";
 const MAMA_PHONE = maskPhone(KG.cc, `${KG.dial}268140`);
 
 /** Хронологический порядок — в ленту он уходит перевёрнутым */
@@ -694,9 +691,8 @@ export function makeMamaThread(personas: Persona[]): Thread {
     readiness: 41,
     inWorkMin: 96,
     lastMsgMin: 92,
-    unread: 1,
+    unread: 0,
     online: true,
-    typing: false,
     hook: "«работа из дома, 2 часа в день»",
     note: "Декрет, живёт с матерью, доход — пособие. Опыта нет, торопить нельзя: сначала «оформление», карту просить на втором звонке. Кандидат на замену Ажар.",
     messages,
