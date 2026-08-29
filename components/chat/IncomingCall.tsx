@@ -41,7 +41,6 @@ export function IncomingCall({
   // Точки и «гудок N» — та же арифметика, что в модалке разговора: движение
   // в кадре должно быть одинаковым, откуда бы звонок ни пришёл
   const step = Math.floor(tick / 3) % 3;
-  const beep = Math.floor(elapsed / 8) + 1;
 
   return (
     /* z-30 — как у разговора: депозит и тревога должны ложиться поверх */
@@ -96,7 +95,7 @@ export function IncomingCall({
               />
             ))}
             <span className="ml-1.5 font-mono text-[10px] tracking-[0.16em] text-amber-300/90 uppercase">
-              идёт вызов · гудок {beep}
+              Входящий вызов
             </span>
           </span>
           <span className="tnum font-mono text-[22px] leading-none font-semibold text-zinc-500">
