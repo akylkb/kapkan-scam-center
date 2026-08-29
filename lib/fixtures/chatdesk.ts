@@ -16,6 +16,7 @@ import {
   makeAzharThread,
   makeKunduzThread,
   makeMamaThread,
+  makeUnknownThread,
 } from "./cast";
 
 /** Событие в логе фишинговой ссылки */
@@ -182,6 +183,9 @@ export function buildChatDesk(seat: number): ChatDesk {
   // Сценарные диалоги стоят первыми строками на всех местах: их играют
   // по имени, и они должны открываться в один клик с любой машины.
   const threads = [
+    // Первой строкой — тот, кто написал только что: непрочитанное в кадре
+    // должно висеть сверху
+    makeUnknownThread(personas),
     makeMamaThread(personas),
     makeAzharThread(personas),
     makeAsanThread(personas),
