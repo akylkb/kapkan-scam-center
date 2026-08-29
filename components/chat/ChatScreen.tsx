@@ -16,6 +16,7 @@ import {
   type Message,
   type ThreadStatus,
 } from "@/lib/fixtures/threads";
+import { UNKNOWN_THREAD_ID } from "@/lib/fixtures/cast";
 import { usd } from "@/lib/format";
 import { useLiveMessages, useLiveSend } from "@/lib/live/LiveProvider";
 import { TYPING_TTL_MS } from "@/lib/live/protocol";
@@ -122,6 +123,15 @@ export function ChatScreen({ seat }: { seat: number }) {
   const list = visible.length > 0 ? visible : threads;
 
   const selected = threads.find((t) => t.id === selectedId) ?? threads[0];
+  /**
+   * Кто звонит. Входящий в этом отделе всегда один и тот же — «не известный
+   * номер» из сценарных строк: его номер набран в модалке крупно, и страна
+   * с городом под ним обязаны быть его, а не того диалога, который в этот
+   * момент открыт на экране. Иначе после «Принять» карточка справа сменится
+   * на другого человека, и монтаж двух кадров не сойдётся.
+   */
+  const incoming =
+    threads.find((t) => t.id === UNKNOWN_THREAD_ID) ?? selected;
   const personaId = personaPick[selected.id] ?? selected.personaId;
   const persona = desk.personas.find((p) => p.id === personaId) ?? desk.personas[0];
 
@@ -468,9 +478,15 @@ export function ChatScreen({ seat }: { seat: number }) {
           в кадре не пересекаются */}
       {ringingAt !== null && call === null && (
         <IncomingCall
-          thread={selected}
+          thread={incoming}
           startTick={ringingAt}
           onAccept={(tick) => {
+            // Трубку подняли — экран переезжает на звонящего: его диалог
+            // в списке, его карточка справа, его же разговор в модалке.
+            // Фильтр возвращаем на «Все диалоги», иначе выбранная строка
+            // может не попасть в текущую выборку и подсветки в кадре не будет
+            setQueue("all");
+            setSelectedId(incoming.id);
             setRingingAt(null);
             setCall({ startTick: tick, ringTicks: 0 });
           }}
