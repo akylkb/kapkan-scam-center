@@ -619,3 +619,87 @@ export const KUNDUZ_SESSION = {
   control: true,
   duration: 2_180,
 } as const;
+
+/* ===========================================================================
+   «МАМА В ДЕКРЕТЕ» — третья линия вербовки.
+
+   Ажар уже отдала карту и числится дропом, эта только откликнулась на
+   объявление: в списке чатера они стоят рядом и показывают одну схему
+   в двух точках — начало и результат. Канал тот же, WhatsApp: по объявлению
+   о подработке пишут именно туда, и на общем плане обе строки идут под
+   зелёной меткой WA.
+
+   Диалог держат коротким намеренно: сцену играют вживую, реплики актёра
+   ложатся поверх фикстуры — см. правило про живую переписку в CLAUDE.md.
+=========================================================================== */
+
+export const MAMA_THREAD_ID = "TH-4783";
+
+export const MAMA_NAME = "Мама в декрете";
+/** Инициалы для лент и очередей: «🇰🇬 Мама в декрете» */
+export const MAMA_SHORT = `${KG.flag} ${MAMA_NAME}`;
+const MAMA_CITY = "Токмок";
+const MAMA_PHONE = maskPhone(KG.cc, `${KG.dial}268140`);
+
+/** Хронологический порядок — в ленту он уходит перевёрнутым */
+const MAMA_SCRIPT: readonly Line[] = [
+  {
+    from: "victim",
+    agoMin: 96,
+    text: "Здравствуйте! Увидела объявление про работу на дому. Я в декрете, свободна вечером 2-3 часа",
+  },
+  {
+    from: "operator",
+    agoMin: 92,
+    text: "Здравствуйте! Да, набор открыт. Оформление удалённое, опыт не нужен — расскажу условия.",
+  },
+];
+
+/** Новые сверху — как во всех журналах проекта */
+const MAMA_EVENTS: readonly Omit<ThreadEvent, "id">[] = [
+  { agoMin: 92, kind: "contact", text: "ответила на объявление о подработке" },
+  { agoMin: 140, kind: "link", text: "показ объявления · группа «работа на дому»" },
+];
+
+/**
+ * Диалог для рабочего места чатера. Личина — та же логика, что у Ажар,
+ * Асана и Кундуз: канал задан сценарием, аккаунт берём с этого места.
+ */
+export function makeMamaThread(personas: Persona[]): Thread {
+  const persona = personas.find((p) => p.channel === "whatsapp") ?? personas[0];
+
+  const messages: Message[] = MAMA_SCRIPT.map((line, i) => ({
+    ...line,
+    id: `MS-${MAMA_THREAD_ID}-${i}`,
+  })).reverse();
+
+  return {
+    id: MAMA_THREAD_ID,
+    name: MAMA_NAME,
+    country: KG,
+    city: MAMA_CITY,
+    age: 29,
+    channel: "whatsapp",
+    handle: "@dekret_mama",
+    phone: MAMA_PHONE,
+    scheme: "job",
+    // «КОНТАКТ»: откликнулась час назад, условий ещё не слышала
+    stage: 0,
+    status: "fresh",
+    personaId: persona.id,
+    item: "подработка на дому · «оператор переводов»",
+    askAmount: 0,
+    paidAmount: 0,
+    wealth: 900,
+    readiness: 41,
+    inWorkMin: 96,
+    lastMsgMin: 92,
+    unread: 1,
+    online: true,
+    typing: false,
+    hook: "«работа из дома, 2 часа в день»",
+    note: "Декрет, живёт с матерью, доход — пособие. Опыта нет, торопить нельзя: сначала «оформление», карту просить на втором звонке. Кандидат на замену Ажар.",
+    messages,
+    events: MAMA_EVENTS.map((e, i) => ({ ...e, id: `EV-${MAMA_THREAD_ID}-${i}` })),
+  };
+}

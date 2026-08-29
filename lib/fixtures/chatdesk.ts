@@ -10,7 +10,7 @@ import {
 } from "./pools";
 import { makePersonas, type Persona } from "./personas";
 import { makeThreads, type Scheme, type Thread } from "./threads";
-import { makeAsanThread, makeAzharThread, makeKunduzThread } from "./cast";
+import { makeAsanThread, makeAzharThread, makeKunduzThread, makeMamaThread } from "./cast";
 
 /** Событие в логе фишинговой ссылки */
 export type LinkEvent = {
@@ -176,6 +176,7 @@ export function buildChatDesk(seat: number): ChatDesk {
   // Сценарные диалоги стоят первыми строками на всех местах: их играют
   // по имени, и они должны открываться в один клик с любой машины.
   const threads = [
+    makeMamaThread(personas),
     makeAzharThread(personas),
     makeAsanThread(personas),
     makeKunduzThread(personas),
