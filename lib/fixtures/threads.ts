@@ -699,15 +699,26 @@ export function makeThread(
   };
 }
 
-/** Все диалоги одного рабочего места */
+/**
+ * Все диалоги одного рабочего места.
+ *
+ * `names` — имена, заданные режиссёром для этого места (см. SEAT_THREAD_NAMES
+ * в lib/fixtures/cast.ts). Имя из списка встаёт на i-й диалог, остальные
+ * остаются генераторными. Подмена делается ПОСЛЕ makeThread: генератор всё
+ * равно вытягивает своё имя из потока, иначе одно заданное имя сдвинуло бы
+ * весь поток и переписало все остальные диалоги места.
+ */
 export function makeThreads(
   rng: Rng,
   personas: Persona[],
   count: number,
   schemeBias: Scheme,
+  names: readonly string[] = [],
 ): Thread[] {
   return Array.from({ length: count }, (_, i) => {
-    const thread = makeThread(rng, i, personas, schemeBias);
+    const generated = makeThread(rng, i, personas, schemeBias);
+    // Имя подставляется до сборки реплик: в шаблонах есть обращение {name}
+    const thread = names[i] ? { ...generated, name: names[i] } : generated;
     const persona = personas.find((p) => p.id === thread.personaId) ?? personas[0];
 
     const ctx: Record<string, string> = {

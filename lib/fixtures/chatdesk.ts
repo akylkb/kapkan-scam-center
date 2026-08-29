@@ -10,7 +10,13 @@ import {
 } from "./pools";
 import { makePersonas, type Persona } from "./personas";
 import { makeThreads, type Scheme, type Thread } from "./threads";
-import { makeAsanThread, makeAzharThread, makeKunduzThread, makeMamaThread } from "./cast";
+import {
+  SEAT_THREAD_NAMES,
+  makeAsanThread,
+  makeAzharThread,
+  makeKunduzThread,
+  makeMamaThread,
+} from "./cast";
 
 /** Событие в логе фишинговой ссылки */
 export type LinkEvent = {
@@ -180,7 +186,8 @@ export function buildChatDesk(seat: number): ChatDesk {
     makeAzharThread(personas),
     makeAsanThread(personas),
     makeKunduzThread(personas),
-    ...makeThreads(seatRng(seat, "threads"), personas, 42, bias),
+    // Имена, заданные режиссёром для этого места, ложатся поверх генератора
+    ...makeThreads(seatRng(seat, "threads"), personas, 42, bias, SEAT_THREAD_NAMES[seat]),
   ];
 
   const phishRng = seatRng(seat, "phish");
