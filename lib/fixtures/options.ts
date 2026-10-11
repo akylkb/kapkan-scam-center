@@ -9,18 +9,28 @@ import { SCENE_START_MINUTES } from "@/lib/scene/store";
  * Сцена снимается в четыре приёма, между которыми по сюжету проходит время,
  * поэтому у каждого этапа свой адрес и своё стартовое состояние: экран не
  * нужно «доигрывать» до нужного баланса перед дублем.
+ *
+ * Счёт в кыргызских сомах. Исход вывода от этапа не зависит — его решает
+ * только баланс, см. OPTION_WITHDRAW_LIMIT.
  */
 export const OPTION_ACTS = {
   /** Новый счёт: Руслан зачисляет деньги. Сделки демо-счёта уже в истории */
-  1: { balance: 0, withdraw: "ok", withdrawLabel: "Вывести", stake: 100 },
-  /** Первый вывод: проходит, чтобы жертва поверила */
-  2: { balance: 1_284.5, withdraw: "ok", withdrawLabel: "Вывести", stake: 100 },
-  /** Крупная сумма: вывод отклоняется */
-  3: { balance: 86_412.75, withdraw: "rejected", withdrawLabel: "Вывести средства", stake: 1_000 },
+  1: { balance: 0, withdrawLabel: "Вывести", stake: 500 },
+  /** Первый вывод: баланс ниже порога — вывод проходит, чтобы жертва поверила */
+  2: { balance: 8_450, withdrawLabel: "Вывести", stake: 500 },
+  /** Крупная сумма: баланс выше порога — вывод отклоняется */
+  3: { balance: 486_400, withdrawLabel: "Вывести средства", stake: 10_000 },
 } as const;
 
 export type OptionActId = keyof typeof OPTION_ACTS;
 export type OptionAct = (typeof OPTION_ACTS)[OptionActId];
+
+/**
+ * Порог вывода, сом. Пока на балансе не больше — вывод проходит: мелочь
+ * отдают, чтобы жертва поверила и занесла ещё. Как только больше —
+ * «Операция отклонена», сколько ни повторяй.
+ */
+export const OPTION_WITHDRAW_LIMIT = 10_000;
 
 /** Этап 4 — сайт пропал. Отдельная страница, терминала на ней нет */
 export const OPTION_DOWN_ACT = 4;
@@ -142,9 +152,9 @@ export type OptionDeal = {
 };
 
 const HISTORY_STAKES: Record<OptionActId, readonly number[]> = {
-  1: [50, 100, 100, 250],
-  2: [25, 50, 100, 150],
-  3: [500, 1_000, 2_500, 5_000],
+  1: [500, 1_000, 1_000, 2_500],
+  2: [200, 500, 1_000, 1_500],
+  3: [5_000, 10_000, 25_000, 50_000],
 };
 
 /**
@@ -189,7 +199,7 @@ export function makeOptionFeed(count = 48): OptionFeedItem[] {
     return {
       who: `${country.flag} ${first} ${last[0]}.`,
       symbol: rng.pick(OPTION_ASSETS).symbol,
-      amount: rng.money(40, 4_800),
+      amount: rng.money(400, 96_000),
     };
   });
 }

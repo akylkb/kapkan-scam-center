@@ -16,7 +16,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { BRAND } from "@/lib/brand";
-import { mmss, signedPct, usd, usdCents } from "@/lib/format";
+import { groupDigits, mmss, signedPct, som, somCents } from "@/lib/format";
 import {
   OPTION_ACTS,
   OPTION_ASSETS,
@@ -37,7 +37,7 @@ import { cx } from "@/components/shared/ui";
 import { PriceChart } from "./PriceChart";
 import { DepositModal, WithdrawModal } from "./CashModals";
 
-const STAKES = [10, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000];
+const STAKES = [100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 50_000];
 const EXPIRIES = [
   { sec: 30, label: "30 сек" },
   { sec: 60, label: "1 мин" },
@@ -58,8 +58,8 @@ type Trade = {
  * Платформа бинарных опционов на ноутбуке Руслана.
  *
  * Экран играется вживую: актёр сам пополняет счёт, открывает сделки и жмёт
- * вывод. Этап сцены (адрес /options/N/) задаёт только стартовый баланс и то,
- * чем кончится вывод. Ctrl+Alt+R возвращает этап в исходное состояние.
+ * вывод. Этап сцены (адрес /options/N/) задаёт только стартовое состояние;
+ * пройдёт ли вывод, решает баланс (OPTION_WITHDRAW_LIMIT). Ctrl+Alt+R возвращает этап в исходное состояние.
  */
 export function OptionsScreen({ actId }: { actId: OptionActId }) {
   const epoch = useSceneValue(selectEpoch);
@@ -144,7 +144,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1">
+        {/* <nav className="flex items-center gap-1">
           {["Торговля", "Турниры", "Сигналы", "Обучение", "Бонусы"].map((n, i) => (
             <span
               key={n}
@@ -156,7 +156,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
               {n}
             </span>
           ))}
-        </nav>
+        </nav> */}
 
         <div className="flex-1" />
 
@@ -174,7 +174,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                 key={balance}
                 className="tnum animate-flash-in font-mono text-[21px] leading-none font-bold text-emerald-400 [text-shadow:0_0_22px_rgba(16,185,129,0.35)]"
               >
-                {usdCents(balance)}
+                {somCents(balance)}
               </p>
             </div>
           </div>
@@ -346,7 +346,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                 <span className="text-sky-300">ОТКРЫТА</span>
                 <span className="text-zinc-200">{trade.symbol}</span>
                 <Dir dir={trade.dir} />
-                <span className="tnum text-right text-zinc-300">{usd(trade.stake)}</span>
+                <span className="tnum text-right text-zinc-300">{som(trade.stake)}</span>
                 <span className="tnum text-right text-zinc-400">{trade.entry.toFixed(trade.digits)}</span>
                 <span className="tnum text-right text-zinc-500">—</span>
                 <span className="tnum text-right font-semibold text-amber-300">
@@ -363,7 +363,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                 </span>
                 <span className="text-zinc-200">{d.symbol}</span>
                 <Dir dir={d.dir} />
-                <span className="tnum text-right text-zinc-400">{usd(d.stake)}</span>
+                <span className="tnum text-right text-zinc-400">{som(d.stake)}</span>
                 <span className="tnum text-right text-zinc-400">{d.entry.toFixed(d.digits)}</span>
                 <span className="tnum text-right text-zinc-300">{d.close.toFixed(d.digits)}</span>
                 <span
@@ -373,7 +373,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                   )}
                 >
                   {d.profit >= 0 ? "+" : "−"}
-                  {usdCents(Math.abs(d.profit))}
+                  {somCents(Math.abs(d.profit))}
                 </span>
               </div>
             ))}
@@ -389,16 +389,16 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                 <Minus className="h-4 w-4" />
               </StepButton>
               <p className="tnum flex-1 rounded-[4px] border border-zinc-700 bg-zinc-900/70 py-2 text-center font-mono text-[24px] font-semibold text-zinc-50">
-                {usd(stake)}
+                {som(stake)}
               </p>
               <StepButton onClick={() => setStake(STAKES[Math.min(STAKES.length - 1, stakeIdx + 1)])}>
                 <Plus className="h-4 w-4" />
               </StepButton>
             </div>
             <div className="mt-1.5 grid grid-cols-4 gap-1.5">
-              {[50, 100, 500, 1_000].map((v) => (
+              {[500, 1_000, 5_000, 10_000].map((v) => (
                 <Pill key={v} active={v === stake} onClick={() => setStake(v)}>
-                  ${v}
+                  {groupDigits(v)}
                 </Pill>
               ))}
             </div>
@@ -416,9 +416,9 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
             </div>
 
             <div className="mt-3 flex items-baseline justify-between rounded-[4px] border border-emerald-800/50 bg-emerald-500/10 px-3 py-2">
-              <span className="text-[11.5px] text-emerald-200/80">Выплата при верном прогнозе</span>
+              <span className="text-[11.5px] text-emerald-200/80">Возможная выплата</span>
               <span className="tnum font-mono text-[17px] font-bold text-emerald-300">
-                {usdCents(stake + payout)}
+                {somCents(stake + payout)}
               </span>
             </div>
 
@@ -458,7 +458,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                   {won.profit >= 0 ? "Прогноз верный" : "Прогноз неверный"} ·{" "}
                   <span className="tnum text-[16px]">
                     {won.profit >= 0 ? "+" : "−"}
-                    {usdCents(Math.abs(won.profit))}
+                    {somCents(Math.abs(won.profit))}
                   </span>
                 </p>
               ) : balance < stake ? (
@@ -505,8 +505,8 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
                   >
                     <span className="min-w-0 flex-1 truncate text-[11px] text-zinc-300">{f.who}</span>
                     <span className="shrink-0 font-mono text-[10px] text-zinc-600">{f.symbol}</span>
-                    <span className="tnum w-[64px] shrink-0 text-right font-mono text-[11px] text-emerald-400">
-                      +{usd(f.amount)}
+                    <span className="tnum w-[92px] shrink-0 text-right font-mono text-[11px] text-emerald-400">
+                      +{som(f.amount)}
                     </span>
                   </div>
                 );
@@ -530,7 +530,6 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
       {modal === "withdraw" && (
         <WithdrawModal
           balance={balance}
-          outcome={act.withdraw}
           confirmLabel={act.withdrawLabel}
           onDone={(amount) => setBalance((b) => Math.round((b - amount) * 100) / 100)}
           onClose={() => setModal(null)}

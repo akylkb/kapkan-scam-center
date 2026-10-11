@@ -33,6 +33,19 @@ export function usdCents(value: number): string {
   return `${sign}$${groupDigits(Math.floor(abs))}.${cents}`;
 }
 
+/** 8450 → "8 450 сом" — платформа опционов (/options) считает в кыргызских сомах */
+export function som(value: number): string {
+  const sign = value < 0 ? "−" : "";
+  return `${sign}${groupDigits(Math.abs(Math.round(value)))} сом`;
+}
+
+/** 8450.5 → "8 450.50 сом" */
+export function somCents(value: number): string {
+  const sign = value < 0 ? "−" : "";
+  const [whole, cents] = Math.abs(value).toFixed(2).split(".");
+  return `${sign}${groupDigits(Number(whole))}.${cents} сом`;
+}
+
 /** 184320 → "184.3K", 2400000 → "2.4M" — для крупных цифр на стене */
 export function compact(value: number): string {
   const abs = Math.abs(value);

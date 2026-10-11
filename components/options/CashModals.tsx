@@ -3,8 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Bitcoin, CheckCircle2, CreditCard, Loader2, Lock, Wallet, X, XCircle } from "lucide-react";
 import { BRAND } from "@/lib/brand";
-import { maskCard, usdCents } from "@/lib/format";
-import { OPTION_CARD_LAST4 } from "@/lib/fixtures/options";
+import { groupDigits, maskCard, somCents } from "@/lib/format";
+import { OPTION_CARD_LAST4, OPTION_WITHDRAW_LIMIT } from "@/lib/fixtures/options";
 import { useTick } from "@/lib/scene/SceneProvider";
 import { cx } from "@/components/shared/ui";
 
@@ -43,22 +43,41 @@ export function DepositModal({
   onDone: (amount: number) => void;
   onClose: () => void;
 }) {
-  const [amount, setAmount] = useState(500);
+  // Сумму актёр набирает сам; в состоянии только цифры, пробелы разрядов
+  // дорисовываются при выводе
+  const [draft, setDraft] = useState("5000");
+  const amount = Number(draft) || 0;
   const [method, setMethod] = useState(0);
   const op = useOperation(7, () => onDone(amount));
+  const submit = amount > 0 ? op.run : undefined;
 
   return (
     <Frame title="Пополнение счёта" onClose={onClose}>
       {op.phase === "form" && (
         <>
           <Label>Сумма пополнения</Label>
-          <p className="tnum mb-2 rounded-[4px] border border-zinc-700 bg-zinc-900/70 px-3 py-2.5 font-mono text-[28px] font-semibold text-zinc-100">
-            {usdCents(amount)}
-          </p>
+          {/* Настоящее поле, как у чатера: select-text — потому что выделение
+              отключено глобально, а в поле ввода оно нужно */}
+          <label className="mb-2 flex items-baseline gap-2 rounded-[4px] border border-zinc-700 bg-zinc-900/70 px-3 py-2.5 focus-within:border-sky-500/70">
+            <input
+              value={draft ? groupDigits(amount) : ""}
+              onChange={(e) => setDraft(e.target.value.replace(/\D/g, "").replace(/^0+/, "").slice(0, 8))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submit?.();
+              }}
+              autoFocus
+              inputMode="numeric"
+              spellCheck={false}
+              autoComplete="off"
+              placeholder="0"
+              className="tnum min-w-0 flex-1 bg-transparent font-mono text-[28px] font-semibold text-zinc-100 caret-sky-400 select-text placeholder:text-zinc-700"
+            />
+            <span className="font-mono text-[18px] text-zinc-500">сом</span>
+          </label>
           <div className="mb-4 grid grid-cols-5 gap-1.5">
-            {[100, 250, 500, 1_000, 2_500].map((v) => (
-              <Chip key={v} active={v === amount} onClick={() => setAmount(v)}>
-                ${v}
+            {[1_000, 2_500, 5_000, 10_000, 25_000].map((v) => (
+              <Chip key={v} active={v === amount} onClick={() => setDraft(String(v))}>
+                {groupDigits(v)}
               </Chip>
             ))}
           </div>
@@ -89,10 +108,15 @@ export function DepositModal({
           </div>
 
           <button
-            onClick={op.run}
-            className="w-full rounded-[4px] bg-emerald-500 py-3 font-mono text-[13px] font-bold tracking-[0.1em] text-zinc-950 uppercase hover:bg-emerald-400"
+            onClick={submit}
+            className={cx(
+              "w-full rounded-[4px] py-3 font-mono text-[13px] font-bold tracking-[0.1em] uppercase",
+              amount > 0
+                ? "bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                : "bg-zinc-800 text-zinc-600",
+            )}
           >
-            Зачислить {usdCents(amount)}
+            Зачислить {somCents(amount)}
           </button>
         </>
       )}
@@ -103,7 +127,7 @@ export function DepositModal({
         <Result
           tone="ok"
           title="Средства зачислены"
-          amount={`+${usdCents(amount)}`}
+          amount={`+${somCents(amount)}`}
           rows={[
             ["Способ", METHODS[method].title],
             ["Номер операции", "DP-771204"],
@@ -124,18 +148,17 @@ const METHODS = [
 ];
 
 /**
- * Вывод средств. Исход задаёт этап сцены: первый небольшой вывод проходит,
- * чтобы жертва поверила, а крупный отклоняется — сколько ни повторяй.
+ * Вывод средств. Исход решает баланс на момент открытия окна: до порога
+ * OPTION_WITHDRAW_LIMIT включительно вывод проходит, чтобы жертва поверила,
+ * выше — отклоняется, сколько ни повторяй.
  */
 export function WithdrawModal({
   balance,
-  outcome,
   confirmLabel,
   onDone,
   onClose,
 }: {
   balance: number;
-  outcome: "ok" | "rejected";
   confirmLabel: string;
   onDone: (amount: number) => void;
   onClose: () => void;
@@ -145,7 +168,7 @@ export function WithdrawModal({
   // меняется, а в квитанции должна остаться выведенная сумма
   const [available] = useState(balance);
   const amount = Math.round(available * share * 100) / 100;
-  const ok = outcome === "ok";
+  const ok = available <= OPTION_WITHDRAW_LIMIT;
   const op = useOperation(ok ? 9 : 12, () => {
     if (ok) onDone(amount);
   });
@@ -157,13 +180,13 @@ export function WithdrawModal({
           <div className="mb-4 flex items-baseline justify-between border-b border-zinc-800 pb-3">
             <span className="text-[12px] text-zinc-500">Доступно к выводу</span>
             <span className="tnum font-mono text-[24px] font-semibold text-emerald-400">
-              {usdCents(available)}
+              {somCents(available)}
             </span>
           </div>
 
           <Label>Сумма вывода</Label>
           <p className="tnum mb-2 rounded-[4px] border border-zinc-700 bg-zinc-900/70 px-3 py-2.5 font-mono text-[28px] font-semibold text-zinc-100">
-            {usdCents(amount)}
+            {somCents(amount)}
           </p>
           <div className="mb-4 grid grid-cols-3 gap-1.5">
             {[0.25, 0.5, 1].map((v) => (
@@ -199,7 +222,7 @@ export function WithdrawModal({
         <Result
           tone="ok"
           title="Заявка исполнена"
-          amount={usdCents(amount)}
+          amount={somCents(amount)}
           rows={[
             ["Получатель", `Карта ${maskCard(OPTION_CARD_LAST4)}`],
             ["Номер операции", "WD-208841"],
@@ -214,7 +237,7 @@ export function WithdrawModal({
         <Result
           tone="fail"
           title="Операция отклонена"
-          amount={usdCents(amount)}
+          amount={somCents(amount)}
           rows={[
             ["Код отказа", "WD-4031"],
             ["Причина", "ПРОВЕРКА СЛУЖБОЙ БЕЗОПАСНОСТИ"],
