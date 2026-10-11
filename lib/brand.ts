@@ -27,10 +27,10 @@ export const BRAND = {
 
   /** Платформа бинарных опционов — ноутбук Руслана (/options) */
   options: {
-    name: "OPTIRA",
-    domain: "optira.trade",
+    name: "TULPAR COIN",
+    domain: "tulpar.coin",
     license: "FMRC/BO/2217/24",
-    support: "help@optira.trade",
+    support: "help@tulpar.coin",
   },
 
   /** Платёжный «провайдер» */
