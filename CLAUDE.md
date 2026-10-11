@@ -73,6 +73,9 @@
 - **lucide-react** — иконки
 - **lightweight-charts** — только большой график на экране жертвы;
   мелкие графики рисует [Sparkline](components/shared/Sparkline.tsx)
+  Тиковый график опционов — свой SVG
+  ([PriceChart](components/options/PriceChart.tsx)): цена там чистая функция
+  от тика сцены и подкручивается под открытую сделку
 
 Библиотеки компонентов сознательно нет: дефолты UI-китов дают «обычный SaaS»,
 а нужна нестандартная плотная кинематографичная вёрстка.
@@ -84,9 +87,10 @@
 ```
 app/{crm,drops,chat,victim}/[seat]/  рабочие места, по HTML на каждое место
 app/{wall,client,admin}/       экраны без номера места
+app/options/[act]/             бинарные опционы: N — этап сцены, а не место
 app/page.tsx                   служебный лаунчер (в кадр не попадает)
 scripts/serve.mjs              съёмочный сервер: раздаёт out/ и держит /live
-components/{crm,drops,chat,victim,wall,client,admin,shared}/
+components/{crm,drops,chat,victim,wall,client,options,admin,shared}/
 lib/
   brand.ts       ВСЕ названия в кадре — менять только здесь
   prng.ts        детерминированный генератор

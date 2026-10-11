@@ -25,6 +25,14 @@ export const BRAND = {
     support: "support@aurum-capital.trade",
   },
 
+  /** Платформа бинарных опционов — ноутбук Руслана (/options) */
+  options: {
+    name: "OPTIRA",
+    domain: "optira.trade",
+    license: "FMRC/BO/2217/24",
+    support: "help@optira.trade",
+  },
+
   /** Платёжный «провайдер» */
   psp: {
     name: "PayNordic",

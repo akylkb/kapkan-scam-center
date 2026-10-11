@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Building2,
+  CandlestickChart,
   Keyboard,
   LayoutDashboard,
   LineChart,
@@ -72,6 +73,16 @@ const SCREENS = [
     accent: "border-amber-700/50 hover:border-amber-500",
   },
   {
+    href: "/options",
+    icon: CandlestickChart,
+    title: "Бинарные опционы",
+    sub: "Ноутбук Руслана · по этапам сцены",
+    desc: `Платформа ${BRAND.options.name}: пополнение счёта, сделки «вверх / вниз», первый вывод проходит, крупный — отклонён, в финале сайт недоступен.`,
+    seats: false,
+    acts: ["Пополнение", "Первый вывод", "Вывод отклонён", "Сайт недоступен"],
+    accent: "border-sky-700/50 hover:border-sky-500",
+  },
+  {
     href: "/admin",
     icon: Building2,
     title: "Панель супервайзера",
@@ -124,7 +135,19 @@ export default function Launcher() {
                 </div>
               </div>
 
-              {s.seats ? (
+              {"acts" in s ? (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {s.acts.map((label, n) => (
+                    <Link
+                      key={label}
+                      href={`${s.href}/${n + 1}/`}
+                      className="flex h-8 items-center rounded-[3px] border border-zinc-800 bg-zinc-900/60 px-3 font-mono text-[11px] text-zinc-300 hover:border-sky-600 hover:bg-sky-950/50 hover:text-sky-300"
+                    >
+                      {n + 1} · {label}
+                    </Link>
+                  ))}
+                </div>
+              ) : s.seats ? (
                 <div className="mt-3 flex flex-wrap gap-1">
                   {SEATS.map((n) => (
                     <Link

@@ -18,6 +18,8 @@
   --animate-blink: blink 1.2s step-end infinite;
   --animate-alarm: alarm 1.05s ease-in-out infinite;
   --animate-throb: throb 0.9s ease-in-out infinite;
+  --animate-page-load: page-load 1.5s ease-out both;
+  --animate-page-fail: page-fail 1.7s linear both;
 }
 
 @keyframes marquee {
@@ -49,6 +51,19 @@
 @keyframes throb {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
+}
+
+/* /options/4: полоса «загрузки» доходит до края и гаснет, затем проявляется ошибка */
+@keyframes page-load {
+  0% { width: 0; opacity: 1; }
+  55% { width: 62%; opacity: 1; }
+  88% { width: 100%; opacity: 1; }
+  100% { width: 100%; opacity: 0; }
+}
+
+@keyframes page-fail {
+  0%, 86% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 html,
