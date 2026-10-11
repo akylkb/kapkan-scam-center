@@ -131,7 +131,7 @@ function Terminal({ actId, act }: { actId: OptionActId; act: OptionAct }) {
       {/* Шапка */}
       <header className="flex h-14 shrink-0 items-center gap-5 border-b border-zinc-800 bg-[#0e121a] px-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br to-orange-400 to-orange-500">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-700">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               xmlSpace="preserve"
