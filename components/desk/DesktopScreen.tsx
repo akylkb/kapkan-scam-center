@@ -71,9 +71,9 @@ export function DesktopScreen({ seat }: { seat: number }) {
             <span className="h-[3px] w-[3px] rounded-full bg-zinc-500" />
           </div>
         ))}
-        <div className="ml-auto flex items-center gap-3">
+        {/* <div className="ml-auto flex items-center gap-3">
           <BigClock />
-        </div>
+        </div> */}
       </footer>
     </div>
   );

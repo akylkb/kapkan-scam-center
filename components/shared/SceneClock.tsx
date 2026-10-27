@@ -20,6 +20,7 @@ export function SceneClock() {
   const second = useSecond();
   const minutes = SCENE_START_MINUTES + second / 60;
 
+  return null
   return (
     <div className="flex items-center gap-3.5">
       {ZONES.map((z) => (
