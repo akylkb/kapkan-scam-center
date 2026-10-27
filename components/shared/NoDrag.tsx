@@ -3,17 +3,15 @@
 import { useEffect } from "react";
 
 /**
- * Гасит браузерное контекстное меню и перетаскивание.
- * Если актёр случайно кликнет правой кнопкой в дубле — в кадре не должно
- * появиться меню Chrome с пунктом «Просмотреть код».
+ * Гасит браузерное перетаскивание: случайно «подхваченная» картинка или
+ * ссылка в дубле тянется за курсором полупрозрачным призраком.
+ * Контекстное меню не трогаем — правый клик работает как обычно.
  */
-export function NoContextMenu() {
+export function NoDrag() {
   useEffect(() => {
     const block = (e: Event) => e.preventDefault();
-    document.addEventListener("contextmenu", block);
     document.addEventListener("dragstart", block);
     return () => {
-      document.removeEventListener("contextmenu", block);
       document.removeEventListener("dragstart", block);
     };
   }, []);

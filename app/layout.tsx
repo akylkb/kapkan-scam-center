@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { NoContextMenu } from "@/components/shared/NoContextMenu";
+import { NoDrag } from "@/components/shared/NoDrag";
 
 /**
  * Шрифты подтягиваются на этапе сборки и дальше раздаются самим приложением.
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ru" className={`${ui.variable} ${code.variable} h-full antialiased`}>
       <body className="h-full overflow-hidden bg-zinc-950 text-zinc-200">
-        <NoContextMenu />
+        <NoDrag />
         {children}
       </body>
     </html>
